@@ -1,0 +1,94 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-13T22:48:25.364Z",
+  "summary": "Diff adds frontend admin route guarding and hides Admin nav for non-admins, introduces INR formatting utilities, premium dark-mode styling/animations, mobile bottom navigation, and a redesigned spin wheel using new static assets. However, the Stripe-to-Razorpay migration is not actually implemented end-to-end: Stripe remains present in backend migration and an admin Stripe PaymentSetup component still exists, while Buy Credits only shows a Razorpay placeholder without backend order creation/verification or credit granting.",
+  "missing_requirements": [
+    {
+      "id": "REQ-15",
+      "requirement": "Enforce RBAC on the backend for all admin-only operations and payment-configuration operations, ensuring only authorized admins can configure payment settings and only authorized users can create/verify payment purchases.",
+      "reason": "The diff shows backend user-profile methods doing permission checks, but provides no evidence of new Razorpay payment configuration methods or user-only payment initiation/verification endpoints being added and protected; backend still references Stripe config state.",
+      "evidence": [
+        "backend/main.mo",
+        "backend/migration.mo"
+      ]
+    },
+    {
+      "id": "REQ-16",
+      "requirement": "Replace the Stripe payment flow with a Razorpay payment flow that supports UPI and Indian banking methods for buying credits, including backend-verified payment completion before granting credits.",
+      "reason": "Frontend Buy Credits loads Razorpay script but only shows a 'coming soon' toast and does not call backend to create a Razorpay order or verify a payment. Backend changes shown still include Stripe imports/config and a migration that preserves Stripe configuration; there is no evidence of Razorpay order creation, signature verification, deposit transaction recording, or credit granting after verification. Stripe configuration UI is also still present.",
+      "evidence": [
+        "frontend/src/pages/BuyCreditsPage.tsx",
+        "frontend/src/utils/razorpay.ts",
+        "backend/main.mo",
+        "backend/migration.mo",
+        "frontend/src/components/admin/PaymentSetup.tsx",
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "id": "REQ-17",
+      "requirement": "Change site-wide currency display and payment amounts from USD to INR (₹), including Buy Credits package displays, payment payload currency, and any user-facing pricing text.",
+      "reason": "INR formatting is implemented and used on Buy Credits packages, but there is no evidence that payment initiation uses INR/paise values with Razorpay (the purchase flow is a placeholder), nor that transactions/purchase confirmations display INR amounts consistently beyond the Buy Credits page.",
+      "evidence": [
+        "frontend/src/utils/currency.ts",
+        "frontend/src/pages/BuyCreditsPage.tsx",
+        "frontend/src/pages/payments/PaymentSuccessPage.tsx",
+        "frontend/src/pages/payments/PaymentFailurePage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "requirement": "Redesign the Spin Wheel experience with updated premium visuals and a distinct winning celebration animation using static assets.",
+      "reason": "SpinWheel references new required generated assets, but the diff summary does not show the actual image files being added under frontend/public/assets/generated (only code references).",
+      "evidence": [
+        "frontend/src/components/game/SpinWheel.tsx"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Added backend state migration that renames an old Stripe configuration field into stripeConfig (and imports Stripe in migration).",
+      "reason": "BuildRequest explicitly requires migrating away from Stripe as the active provider and moving to Razorpay; adding a Stripe-focused migration is not requested and conflicts with the goal of removing Stripe as active payment provider.",
+      "evidence": [
+        "backend/migration.mo"
+      ]
+    },
+    {
+      "description": "Admin Stripe payment setup component still present (Stripe configuration UI).",
+      "reason": "REQ-16 requires Stripe configuration UI and Stripe-related queries/mutations be removed or replaced with Razorpay equivalents; retaining a Stripe PaymentSetup component is an unrequested/contradictory feature.",
+      "evidence": [
+        "frontend/src/components/admin/PaymentSetup.tsx",
+        "frontend-file-summaries.txt"
+      ]
+    }
+  ],
+  "confidence": 0.74,
+  "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/App.tsx",
+    "frontend/src/components/admin/PaymentSetup.tsx",
+    "frontend/src/components/auth/AdminRouteGuard.tsx",
+    "frontend/src/components/game/SpinWheel.tsx",
+    "frontend/src/components/layout/AppLayout.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/index.css",
+    "frontend/src/pages/BuyCreditsPage.tsx",
+    "frontend/src/pages/GamePage.tsx",
+    "frontend/src/pages/ProfilePage.tsx",
+    "frontend/src/pages/TransactionsPage.tsx",
+    "frontend/src/pages/UnauthorizedPage.tsx",
+    "frontend/src/pages/WalletPage.tsx",
+    "frontend/src/pages/admin/AdminDashboardPage.tsx",
+    "frontend/src/pages/admin/AdminUsersPage.tsx",
+    "frontend/src/pages/admin/AdminWheelConfigPage.tsx",
+    "frontend/src/pages/admin/AdminWithdrawalsPage.tsx",
+    "frontend/src/pages/payments/PaymentFailurePage.tsx",
+    "frontend/src/pages/payments/PaymentSuccessPage.tsx",
+    "frontend/src/utils/currency.ts",
+    "frontend/src/utils/razorpay.ts",
+    "project_state.json"
+  ]
+}

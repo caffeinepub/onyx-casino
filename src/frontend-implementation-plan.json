@@ -1,0 +1,274 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "India-focused premium dark UI: strict frontend RBAC, Razorpay (UPI) buy-credits, INR currency, mobile bottom nav, and premium spin-wheel redesign",
+  "requirements": [
+    {
+      "id": "REQ-14",
+      "summary": "Add strict frontend RBAC so non-admin users cannot see or access any admin UI/routes.",
+      "acceptanceCriteria": [
+        "When `useIsCallerAdmin()` resolves to false, the AppLayout shows no Admin navigation item in any viewport (desktop top nav and mobile nav).",
+        "Direct navigation to /admin, /admin/users, /admin/wheel-config, or /admin/withdrawals as a non-admin does not render admin UI; the user is redirected to a non-admin route (e.g., /) or shown a generic not-found/unauthorized page that does not reveal admin dashboard content.",
+        "No admin-only components (e.g., payment configuration) are visible to non-admins anywhere in the app."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/auth/AdminRouteGuard.tsx",
+          "operation": "create",
+          "description": "Create an AdminRouteGuard component that uses `useIsCallerAdmin()` (from existing queries) to block rendering admin page content for non-admins and either redirects to a non-admin route or renders a generic unauthorized/not-found UI."
+        },
+        {
+          "path": "frontend/src/pages/UnauthorizedPage.tsx",
+          "operation": "create",
+          "description": "Add a generic Unauthorized/Not Found page that does not reveal any admin dashboard details and provides navigation back to a safe non-admin route."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wrap all admin routes (/admin, /admin/users, /admin/wheel-config, /admin/withdrawals) with AdminRouteGuard to ensure non-admin direct navigation cannot render admin UI and is redirected/shown the generic unauthorized page."
+        },
+        {
+          "path": "frontend/src/components/layout/AppLayout.tsx",
+          "operation": "modify",
+          "description": "Harden admin navigation hiding by ensuring the Admin nav item is only ever rendered when `useIsCallerAdmin()` has positively resolved true; ensure no admin entry points appear in desktop or mobile navigation."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Remove page-level 'Access Denied' admin UI rendering in favor of relying on the shared AdminRouteGuard so non-admins never see admin panel framing/content."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminUsersPage.tsx",
+          "operation": "modify",
+          "description": "Remove page-level 'Access Denied' admin UI rendering in favor of relying on the shared AdminRouteGuard so non-admins never see admin page structure/content."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminWheelConfigPage.tsx",
+          "operation": "modify",
+          "description": "Remove page-level 'Access Denied' admin UI rendering in favor of relying on the shared AdminRouteGuard so non-admins never see admin page structure/content."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminWithdrawalsPage.tsx",
+          "operation": "modify",
+          "description": "Remove page-level 'Access Denied' admin UI rendering in favor of relying on the shared AdminRouteGuard so non-admins never see admin page structure/content."
+        }
+      ]
+    },
+    {
+      "id": "REQ-16",
+      "summary": "Replace Stripe buy-credits UI with a Razorpay (UPI/banking) checkout flow and post-payment verification before crediting.",
+      "acceptanceCriteria": [
+        "The frontend Buy Credits flow no longer calls `createCheckoutSession` / Stripe session APIs.",
+        "A new Razorpay-based purchase flow is implemented where the backend creates/initiates a Razorpay order/payment intent and the frontend completes the payment using Razorpay checkout with UPI/bank methods available.",
+        "Credits are granted only after the backend verifies the Razorpay payment (e.g., signature/payment status verification) and records a deposit transaction.",
+        "Stripe configuration UI and Stripe-related queries/mutations are removed or replaced with Razorpay equivalents (admin can configure Razorpay credentials/settings).",
+        "Payment success/failure pages continue to work with Razorpay and refresh user profile/transactions after successful verification."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/razorpay.ts",
+          "operation": "create",
+          "description": "Add Razorpay frontend utilities for loading the Razorpay Checkout script, typing the checkout options, and handling checkout open/close callbacks for a Razorpay-based purchase flow."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Remove/stop exporting Stripe-specific queries and mutations (Stripe configured, setStripeConfiguration, createCheckoutSession, getStripeSessionStatus) and add Razorpay equivalents for: admin configuration state, purchase initiation (order creation), and post-checkout verification (so credits only update after verification)."
+        },
+        {
+          "path": "frontend/src/pages/BuyCreditsPage.tsx",
+          "operation": "modify",
+          "description": "Replace Stripe checkout-session redirect with a Razorpay checkout flow: initiate purchase via new Razorpay hook, open Razorpay Checkout with UPI/bank methods, then call backend verification on success before navigating to PaymentSuccess/Failure and refreshing queries."
+        },
+        {
+          "path": "frontend/src/pages/payments/PaymentSuccessPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the Razorpay success path triggers query refresh after verification (and, if needed, can handle verification state passed from the buy-credits flow) while keeping the page generic and English-only."
+        },
+        {
+          "path": "frontend/src/pages/payments/PaymentFailurePage.tsx",
+          "operation": "modify",
+          "description": "Update messaging to reflect Razorpay and ensure a safe retry path back to Buy Credits (no Stripe references)."
+        },
+        {
+          "path": "frontend/src/components/admin/PaymentSetup.tsx",
+          "operation": "rename",
+          "description": "Rename the Stripe-specific admin payment configuration UI to a Razorpay configuration component (e.g., `RazorpayPaymentSetup`) and remove all Stripe references and form fields."
+        },
+        {
+          "path": "frontend/src/components/admin/RazorpayPaymentSetup.tsx",
+          "operation": "create",
+          "description": "Create a Razorpay admin configuration UI to set required Razorpay settings/credentials using the new Razorpay config hooks. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Replace the Stripe PaymentSetup import/usage with the Razorpay admin configuration component so admins can configure Razorpay and no Stripe UI is visible."
+        }
+      ]
+    },
+    {
+      "id": "REQ-17",
+      "summary": "Switch site-wide pricing display and payment amounts from USD to INR (₹) with consistent formatting.",
+      "acceptanceCriteria": [
+        "Buy Credits package prices display in INR with the ₹ symbol (not $).",
+        "Any user-facing copy referencing USD is updated to INR in English.",
+        "Payment initiation uses INR currency values (and correct subunits as required by the Razorpay integration).",
+        "Transactions and any purchase confirmations that show amounts use INR formatting consistently."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/currency.ts",
+          "operation": "create",
+          "description": "Add INR currency formatting helpers (₹ display formatting) and Razorpay subunit conversion helpers (rupees to paise) for consistent use across UI and payment initiation."
+        },
+        {
+          "path": "frontend/src/pages/BuyCreditsPage.tsx",
+          "operation": "modify",
+          "description": "Update credit package displays and copy to INR (₹) and ensure the Razorpay payment payload uses INR with correct subunits for charge amounts."
+        },
+        {
+          "path": "frontend/src/pages/payments/PaymentSuccessPage.tsx",
+          "operation": "modify",
+          "description": "Update any purchase confirmation copy to avoid USD references and ensure any displayed amounts (if present/added) use INR formatting."
+        },
+        {
+          "path": "frontend/src/pages/payments/PaymentFailurePage.tsx",
+          "operation": "modify",
+          "description": "Update copy to avoid USD/Stripe references and keep terminology consistent with INR and Razorpay."
+        }
+      ]
+    },
+    {
+      "id": "REQ-18",
+      "summary": "Polish the app into a premium dark-mode aesthetic with subtle entry animations and refined hover/tap states.",
+      "acceptanceCriteria": [
+        "Primary screens (Game, Wallet, Transactions, Profile, Buy Credits, Admin pages) reflect a cohesive premium dark theme using existing Tailwind token system.",
+        "Key content blocks (cards, page headers, key widgets) animate in subtly on page mount (e.g., fade-in + slight translate).",
+        "Buttons and clickable cards have clear hover (desktop) and active/tap (mobile) states without harming accessibility or readability.",
+        "All new/updated user-facing text remains English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "Extend Tailwind animations with subtle premium entry transitions (e.g., fade/slide) and reusable interactive-state animations for buttons/cards."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Refine dark-mode token values and add small global polish utilities (where appropriate) while keeping to existing token system and maintaining readability/accessibility."
+        },
+        {
+          "path": "frontend/src/pages/GamePage.tsx",
+          "operation": "modify",
+          "description": "Apply premium dark styling consistency, subtle page/card entry animations, and refined hover/active states for key interactive elements."
+        },
+        {
+          "path": "frontend/src/pages/WalletPage.tsx",
+          "operation": "modify",
+          "description": "Apply premium dark styling consistency, subtle page/card entry animations, and improved touch-friendly CTA styling/states."
+        },
+        {
+          "path": "frontend/src/pages/TransactionsPage.tsx",
+          "operation": "modify",
+          "description": "Apply premium dark styling consistency and subtle entry animations for headers/lists; refine hover/tap states on transaction rows."
+        },
+        {
+          "path": "frontend/src/pages/ProfilePage.tsx",
+          "operation": "modify",
+          "description": "Apply premium dark styling consistency and subtle entry animations to profile cards; refine visual hierarchy while keeping English copy."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Apply premium dark styling consistency and subtle entry animations to admin cards/widgets (admin-only)."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminUsersPage.tsx",
+          "operation": "modify",
+          "description": "Apply premium dark styling consistency and subtle entry animations to admin user list (admin-only)."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminWheelConfigPage.tsx",
+          "operation": "modify",
+          "description": "Apply premium dark styling consistency and subtle entry animations to admin config form (admin-only)."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminWithdrawalsPage.tsx",
+          "operation": "modify",
+          "description": "Apply premium dark styling consistency and subtle entry animations to admin withdrawals placeholder content (admin-only)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "summary": "Redesign the Spin Wheel to a premium gold/metallic look with smoother rotation and win celebration, keeping server-authoritative outcomes.",
+      "acceptanceCriteria": [
+        "SpinWheel visuals are updated to a more premium look (gold/metallic accents) using static assets and/or CSS enhancements.",
+        "The rotation animation feels smoother/more physical (e.g., improved easing, optional anticipation/settle) but still ends precisely on the backend-returned outcome segment.",
+        "A winning celebration animation is shown when the outcome indicates a win (e.g., tiger/dragon), and does not trigger on losing outcomes (miss/crit).",
+        "The wheel remains server-authoritative: the frontend never determines the outcome segment on its own."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/generated/spin-wheel-pointer-gold.dim_512x512.png",
+          "operation": "create",
+          "description": "Add the generated asset at exactly this path and wire it into the SpinWheel UI as the wheel pointer icon."
+        },
+        {
+          "path": "frontend/public/assets/generated/win-celebration-burst.dim_1024x1024.png",
+          "operation": "create",
+          "description": "Add the generated asset at exactly this path and wire it into the SpinWheel UI as the win celebration overlay."
+        },
+        {
+          "path": "frontend/public/assets/generated/spin-wheel-face.dim_1024x1024.png",
+          "operation": "modify",
+          "description": "Replace/update the existing wheel face asset with the edited elegant high-end gold/metallic redesign at exactly this same path."
+        },
+        {
+          "path": "frontend/src/components/game/SpinWheel.tsx",
+          "operation": "modify",
+          "description": "Update SpinWheel visuals to use the premium wheel face and pointer asset (frontend/public/assets/generated/spin-wheel-pointer-gold.dim_512x512.png), implement smoother multi-phase rotation/settle animation that lands exactly on the outcome-provided segment, and show the win celebration overlay (frontend/public/assets/generated/win-celebration-burst.dim_1024x1024.png) only for winning outcomes (tiger/dragon) while keeping outcome server-authoritative."
+        },
+        {
+          "path": "frontend/src/pages/GamePage.tsx",
+          "operation": "modify",
+          "description": "Adjust game UI integration so win celebrations are triggered based on backend-returned outcomes and do not fire for losing outcomes; keep all user-facing text in English."
+        }
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "summary": "Implement a mobile-first, app-like responsive layout with a persistent bottom navigation bar and touch-friendly controls.",
+      "acceptanceCriteria": [
+        "On small screens, primary navigation is accessible via a persistent bottom navigation bar covering: Game, Wallet, Transactions, Profile, Buy Credits (and Admin only for admins).",
+        "Bottom navigation indicates the active route and is usable with one-handed touch (adequate hit targets and spacing).",
+        "Page layouts avoid cramped spacing on mobile; key buttons/CTAs are sized for touch and do not overflow.",
+        "Desktop/tablet navigation continues to work (existing header/top nav can remain or be adapted) without regressions."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/layout/AppLayout.tsx",
+          "operation": "modify",
+          "description": "Add a persistent mobile bottom navigation bar (md:hidden) for Game/Wallet/Transactions/Profile/Buy Credits (and Admin only when admin), indicate active route, ensure touch-friendly hit targets, and adjust main content padding to avoid overlap; preserve existing desktop/tablet navigation behavior."
+        },
+        {
+          "path": "frontend/src/pages/GamePage.tsx",
+          "operation": "modify",
+          "description": "Refine mobile spacing and touch-friendly sizing for primary CTAs (spin button) and key content blocks without changing core game logic."
+        },
+        {
+          "path": "frontend/src/pages/WalletPage.tsx",
+          "operation": "modify",
+          "description": "Refine mobile spacing and touch-friendly sizing for primary CTAs (buy/withdraw) and card layout for small screens."
+        },
+        {
+          "path": "frontend/src/pages/BuyCreditsPage.tsx",
+          "operation": "modify",
+          "description": "Refine mobile-first layout (card grid stacking, spacing, CTA sizing) and ensure the purchase flow remains easy to use one-handed on small screens."
+        }
+      ]
+    }
+  ]
+}

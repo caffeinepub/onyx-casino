@@ -1,0 +1,189 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-13T22:48:25.368Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 7,
+    "implemented": 6,
+    "items": [
+      {
+        "id": "REQ-14",
+        "summary": "Implement strict role-based access control (RBAC) in the frontend so that users without admin permissions cannot see any admin navigation entry points and cannot access any admin routes/pages (treat admin pages as non-existent for normal users).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/auth/AdminRouteGuard.tsx",
+          "frontend/src/pages/UnauthorizedPage.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/layout/AppLayout.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "frontend/src/pages/admin/AdminUsersPage.tsx",
+          "frontend/src/pages/admin/AdminWheelConfigPage.tsx",
+          "frontend/src/pages/admin/AdminWithdrawalsPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/auth/AdminRouteGuard.tsx",
+          "frontend/src/pages/UnauthorizedPage.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/layout/AppLayout.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "frontend/src/pages/admin/AdminUsersPage.tsx",
+          "frontend/src/pages/admin/AdminWheelConfigPage.tsx",
+          "frontend/src/pages/admin/AdminWithdrawalsPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-15",
+        "summary": "Enforce RBAC on the backend for all admin-only operations and payment-configuration operations, ensuring only authorized admins can configure payment settings and only authorized users can create/verify payment purchases.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-16",
+        "summary": "Replace the Stripe payment flow with a Razorpay payment flow that supports UPI and Indian banking methods for buying credits, including backend-verified payment completion before granting credits.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/razorpay.ts",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/BuyCreditsPage.tsx",
+          "frontend/src/pages/payments/PaymentSuccessPage.tsx",
+          "frontend/src/pages/payments/PaymentFailurePage.tsx",
+          "frontend/src/components/admin/PaymentSetup.tsx",
+          "frontend/src/components/admin/RazorpayPaymentSetup.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/razorpay.ts",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/BuyCreditsPage.tsx",
+          "frontend/src/pages/payments/PaymentSuccessPage.tsx",
+          "frontend/src/pages/payments/PaymentFailurePage.tsx",
+          "frontend/src/components/admin/PaymentSetup.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-17",
+        "summary": "Change site-wide currency display and payment amounts from USD to INR (₹), including Buy Credits package displays, payment payload currency, and any user-facing pricing text.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/currency.ts",
+          "frontend/src/pages/BuyCreditsPage.tsx",
+          "frontend/src/pages/payments/PaymentSuccessPage.tsx",
+          "frontend/src/pages/payments/PaymentFailurePage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/currency.ts",
+          "frontend/src/pages/BuyCreditsPage.tsx",
+          "frontend/src/pages/payments/PaymentSuccessPage.tsx",
+          "frontend/src/pages/payments/PaymentFailurePage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-18",
+        "summary": "Upgrade the dashboard/admin and main app UI to a premium dark-mode aesthetic with subtle entry animations (fade/slide) and refined hover/tap effects on interactive elements, while keeping user-facing text in English.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/tailwind.config.js",
+          "frontend/src/index.css",
+          "frontend/src/pages/GamePage.tsx",
+          "frontend/src/pages/WalletPage.tsx",
+          "frontend/src/pages/TransactionsPage.tsx",
+          "frontend/src/pages/ProfilePage.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "frontend/src/pages/admin/AdminUsersPage.tsx",
+          "frontend/src/pages/admin/AdminWheelConfigPage.tsx",
+          "frontend/src/pages/admin/AdminWithdrawalsPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/index.css",
+          "frontend/src/pages/GamePage.tsx",
+          "frontend/src/pages/WalletPage.tsx",
+          "frontend/src/pages/TransactionsPage.tsx",
+          "frontend/src/pages/ProfilePage.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "frontend/src/pages/admin/AdminUsersPage.tsx",
+          "frontend/src/pages/admin/AdminWheelConfigPage.tsx",
+          "frontend/src/pages/admin/AdminWithdrawalsPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-19",
+        "summary": "Redesign the Spin Wheel experience to look elegant and professional (high-end betting vibe) with gold/metallic accents, smoother-feeling rotation, and a distinct winning celebration animation, while keeping the outcome server-authoritative.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/public/assets/generated/spin-wheel-pointer-gold.dim_512x512.png",
+          "frontend/public/assets/generated/win-celebration-burst.dim_1024x1024.png",
+          "frontend/public/assets/generated/spin-wheel-face.dim_1024x1024.png",
+          "frontend/src/components/game/SpinWheel.tsx",
+          "frontend/src/pages/GamePage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/public/assets/generated/spin-wheel-pointer-gold.dim_512x512.png",
+          "frontend/public/assets/generated/win-celebration-burst.dim_1024x1024.png",
+          "frontend/public/assets/generated/spin-wheel-face.dim_1024x1024.png",
+          "frontend/src/components/game/SpinWheel.tsx",
+          "frontend/src/pages/GamePage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-20",
+        "summary": "Implement a mobile-first responsive layout that feels app-like for the primary Indian mobile audience, including a bottom navigation bar and touch-friendly controls across the app.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/layout/AppLayout.tsx",
+          "frontend/src/pages/GamePage.tsx",
+          "frontend/src/pages/WalletPage.tsx",
+          "frontend/src/pages/BuyCreditsPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/layout/AppLayout.tsx",
+          "frontend/src/pages/GamePage.tsx",
+          "frontend/src/pages/WalletPage.tsx",
+          "frontend/src/pages/BuyCreditsPage.tsx"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
+    "build-request.json",
+    "build-template/README.md",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/public/assets/generated/spin-wheel-face.dim_1024x1024.png",
+    "frontend/public/assets/generated/spin-wheel-pointer-gold.dim_512x512.png",
+    "frontend/public/assets/generated/win-celebration-burst.dim_1024x1024.png",
+    "frontend/src/App.tsx",
+    "frontend/src/components/admin/PaymentSetup.tsx",
+    "frontend/src/components/auth/AdminRouteGuard.tsx",
+    "frontend/src/components/game/SpinWheel.tsx",
+    "frontend/src/components/layout/AppLayout.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/index.css",
+    "frontend/src/pages/BuyCreditsPage.tsx",
+    "frontend/src/pages/GamePage.tsx",
+    "frontend/src/pages/ProfilePage.tsx",
+    "frontend/src/pages/TransactionsPage.tsx",
+    "frontend/src/pages/UnauthorizedPage.tsx",
+    "frontend/src/pages/WalletPage.tsx",
+    "frontend/src/pages/admin/AdminDashboardPage.tsx",
+    "frontend/src/pages/admin/AdminUsersPage.tsx",
+    "frontend/src/pages/admin/AdminWheelConfigPage.tsx",
+    "frontend/src/pages/admin/AdminWithdrawalsPage.tsx",
+    "frontend/src/pages/payments/PaymentFailurePage.tsx",
+    "frontend/src/pages/payments/PaymentSuccessPage.tsx",
+    "frontend/src/utils/currency.ts",
+    "frontend/src/utils/razorpay.ts",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

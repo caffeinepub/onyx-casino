@@ -1,0 +1,268 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 5,
+  "summary": "Refine ONYX Casino into a premium, mobile-first betting-style web app for the Indian market with strict RBAC (admin-only views hidden from normal users), Razorpay (UPI + Indian payment methods) instead of Stripe, site-wide INR (₹) currency, and upgraded dark-mode UI/animations including a more elegant, high-end spin wheel experience.",
+  "architectural_notes": [
+    "Server-authoritative results: client renders animations only; server computes outcomes and balance changes.",
+    "DB stores the real wallet balance; UI wallet is a mirror of server state.",
+    "Every spin must be logged (auditable transaction ledger).",
+    "Outcome probabilities are weighted and configurable from DB; ensure house has positive expected value (negative EV for player).",
+    "Bet cost is fixed at 50 credits per spin.",
+    "Credits are pegged at 2x real-money value for purchases.",
+    "Auth uses Internet Identity + external providers; no email-based auth/verification.",
+    "Enforce RBAC end-to-end: admin UI must be hidden for non-admins and all admin routes/actions must be server-authorized (do not rely on client-side hiding alone).",
+    "Payments provider change: use Razorpay (UPI + Indian payment methods) instead of Stripe; credits are granted only after backend verification of successful payment.",
+    "Localize currency to INR (₹) across UI and payment flows."
+  ],
+  "known_issues": [
+    "Admin controls are currently visible/accessible to normal users; requires RBAC and route/UI guarding."
+  ],
+  "isFixRequest": true,
+  "imageRequirements": "## Required Images\n- Gold metallic wheel pointer icon (spin-wheel-pointer-gold.dim_512x512.png)\n- Premium dark confetti/spark burst overlay (win-celebration-burst.dim_1024x1024.png)\n\n## Edit Images\n- Elegant high-end gold/metallic wheel face redesign (spin-wheel-face.dim_1024x1024.png > spin-wheel-face.dim_1024x1024.png)",
+  "existing_features": [
+    {
+      "id": "feature-implement-passwordless-authentication-using-internet-identity-only-with-google-apple-microsoft-via-ii-block-all-app-functionality-until-the-user-is-authenticated",
+      "title": "Implement passwordless authentication using Internet Identity only (with Google/Apple/Microsoft via II). Block all app functionality until the user is authenticated.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-admin-portal-with-admin-only-authentication-authorization-that-allows-viewing-user-profiles-adjusting-user-credit-balances-viewing-user-transaction-spin-history-and-editing-wheel-probabilities-house-edge-configuration",
+      "title": "Implement an admin portal with admin-only authentication/authorization that allows: viewing user profiles, adjusting user credit balances, viewing user transaction/spin history, and editing wheel probabilities/house-edge configuration.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-integrate-stripe-for-real-money-credit-purchases-credits-must-be-2x-the-real-money-amount-and-larger-purchases-must-receive-configurable-discounts-purchased-credits-must-be-granted-only-after-backend-verified-payment-completion",
+      "title": "Integrate Stripe for real-money credit purchases: credits must be 2x the real-money amount, and larger purchases must receive configurable discounts. Purchased credits must be granted only after backend-verified payment completion.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-deposit-and-withdrawal-flows-with-a-secure-ledgered-workflow-deposits-are-handled-via-stripe-credit-purchases-withdrawals-create-a-withdrawal-request-record-that-admins-can-approve-deny-and-mark-as-completed-with-all-steps-logged-as-transactions-audit-events",
+      "title": "Implement deposit and withdrawal flows with a secure ledgered workflow: deposits are handled via Stripe credit purchases; withdrawals create a withdrawal request record that admins can approve/deny and mark as completed, with all steps logged as transactions/audit events.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-main-casino-ui-with-a-betting-style-layout-including-navigation-profile-wallet-game-transactions-buy-credits-withdraw-and-an-engaging-spin-wheel-experience-where-the-wheel-animation-is-driven-by-the-backend-returned-outcome-include-wallet-update-animations-and-clear-user-feedback-for-successes-errors",
+      "title": "Build the main casino UI with a betting-style layout including navigation (Profile, Wallet, Game, Transactions, Buy Credits, Withdraw), and an engaging Spin Wheel experience where the wheel animation is driven by the backend-returned outcome. Include wallet update animations and clear user feedback for successes/errors.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-define-and-apply-a-coherent-visually-appealing-trust-secure-casino-theme-across-the-frontend-colors-typography-spacing-components-without-using-a-blue-purple-primary-palette-keep-styling-consistent-across-login-game-wallet-and-admin-screens",
+      "title": "Define and apply a coherent, visually appealing 'trust & secure' casino theme across the frontend (colors, typography, spacing, components) without using a blue/purple primary palette. Keep styling consistent across login, game, wallet, and admin screens.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-generated-static-image-assets-for-branding-and-the-wheel-presentation-and-render-them-in-the-frontend-as-static-assets-from-frontend-public-assets-generated-do-not-serve-images-through-the-backend",
+      "title": "Add generated static image assets for branding and the wheel presentation and render them in the frontend as static assets from frontend/public/assets/generated (do not serve images through the backend).",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-strict-role-based-access-control-rbac-in-the-frontend-so-that-users-without-admin-permissions-cannot-see-any-admin-navigation-entry-points-and-cannot-access-any-admin-routes-pages-treat-admin-pages-as-non-existent-for-normal-users",
+      "title": "Implement strict role-based access control (RBAC) in the frontend so that users without admin permissions cannot see any admin navigation entry points and cannot access any admin routes/pages (treat admin pages as non-existent for normal users).",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-stripe-payment-flow-with-a-razorpay-payment-flow-that-supports-upi-and-indian-banking-methods-for-buying-credits-including-backend-verified-payment-completion-before-granting-credits",
+      "title": "Replace the Stripe payment flow with a Razorpay payment flow that supports UPI and Indian banking methods for buying credits, including backend-verified payment completion before granting credits.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-change-site-wide-currency-display-and-payment-amounts-from-usd-to-inr-including-buy-credits-package-displays-payment-payload-currency-and-any-user-facing-pricing-text",
+      "title": "Change site-wide currency display and payment amounts from USD to INR (₹), including Buy Credits package displays, payment payload currency, and any user-facing pricing text.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-upgrade-the-dashboard-admin-and-main-app-ui-to-a-premium-dark-mode-aesthetic-with-subtle-entry-animations-fade-slide-and-refined-hover-tap-effects-on-interactive-elements-while-keeping-user-facing-text-in-english",
+      "title": "Upgrade the dashboard/admin and main app UI to a premium dark-mode aesthetic with subtle entry animations (fade/slide) and refined hover/tap effects on interactive elements, while keeping user-facing text in English.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-the-spin-wheel-experience-to-look-elegant-and-professional-high-end-betting-vibe-with-gold-metallic-accents-smoother-feeling-rotation-and-a-distinct-winning-celebration-animation-while-keeping-the-outcome-server-authoritative",
+      "title": "Redesign the Spin Wheel experience to look elegant and professional (high-end betting vibe) with gold/metallic accents, smoother-feeling rotation, and a distinct winning celebration animation, while keeping the outcome server-authoritative.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-mobile-first-responsive-layout-that-feels-app-like-for-the-primary-indian-mobile-audience-including-a-bottom-navigation-bar-and-touch-friendly-controls-across-the-app",
+      "title": "Implement a mobile-first responsive layout that feels app-like for the primary Indian mobile audience, including a bottom navigation bar and touch-friendly controls across the app.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Implement passwordless authentication (Option B): Internet Identity login with Google/Apple/Microsoft; no email/password and no email verification flows",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Server-authoritative wallet + transaction ledger: DB is source of truth, UI mirrors server; log every spin and balance change",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Spin Wheel mini-game: costs 50 credits/spin, server computes outcome, returns result for client animation; wallet deducts and applies segment multipliers/effects",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Weighted probability & RTP/house-edge configuration stored in DB; ensure long-term negative EV for player; adjustable without redeploy",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Admin portal: manage user profiles, adjust user credit balances, configure wheel segment probabilities/outcomes, and dynamically reduce winnings/increase losses for high-profit players",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Frontend app UI: betting-style layout with navigation (profile, wallet), appealing wheel + wallet update animations, and 'trust & secure' themed design",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Framework for future games (Mines, Dice, Crash, Card Flip) sharing the same wallet/transaction system",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Create a server-authoritative wallet and transaction ledger on the Motoko backend where the backend state is the single source of truth for each user's credit balance. The frontend must only display balances returned by the backend.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Implement the Spin Wheel game as a backend-computed outcome with a fixed bet cost of 50 credits per spin. Each spin must: validate sufficient funds, deduct the bet, compute the outcome based on configured weights, apply the payout/penalty, persist the updated balance, and log the spin and resulting transaction(s).",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Implement wheel segments and effects exactly as specified: Tiger (1.4x), Dragon (1.96x), Null (0x), Crit (-50% partial loss), with example outcomes matching the spec for a 50-credit bet.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Add a database-backed (canister state) probability configuration system for the wheel. Outcomes must be weighted (not equal probability) and adjustable by an admin without redeploying.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Enforce a long-term house edge on the backend so the expected value for the player is always negative, even when admins adjust probabilities. Prevent admins from saving configurations that yield non-negative expected value.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Add backend logic and admin controls to dynamically reduce winnings/increase losses for high-profit players in a configurable way, while keeping the client unaware of any special handling.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Implement Role-Based Access Control (RBAC) to ensure all admin controls/pages are strictly inaccessible and hidden for normal users (admin-only authentication + route/UI guards).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Replace Stripe payments with Razorpay integration (support UPI + local Indian banking methods) for purchasing credits and related deposit flows; update payment verification to be backend-verified before crediting.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Localize site-wide currency to INR (₹) including UI formatting, pricing displays, and payment amounts.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "UI/UX upgrade: premium dark-mode dashboard with subtle entry animations (fade-ins), hover/tap effects, and more polished, engaging visual interactions.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Redesign Spin Wheel visuals/feel to be elegant and professional (gold/metallic accents), smoother rotation/physics, and add a 'winning' celebration animation while remaining server-authoritative.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Mobile-first responsive redesign focused on primary mobile audience: app-like layout with bottom navigation bar and touch-friendly controls.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "Enforce RBAC on the backend for all admin-only operations and payment-configuration operations, ensuring only authorized admins can configure payment settings and only authorized users can create/verify payment purchases.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "ONYX Casino",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}
