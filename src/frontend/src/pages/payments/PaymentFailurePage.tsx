@@ -12,15 +12,15 @@ export default function PaymentFailurePage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
             <XCircle className="h-6 w-6" />
-            Payment Cancelled
+            Submission Not Completed
           </CardTitle>
           <CardDescription>
-            Your payment was not completed
+            Your payment request was not submitted
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
-            No charges were made to your account. You can try again or return to the game.
+            No payment request was created. You can try again or return to the game.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button

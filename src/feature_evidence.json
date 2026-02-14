@@ -2,17 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-implement-strict-role-based-access-control-rbac-in-the-frontend-so-that-users-without-admin-permissions-cannot-see-any-admin-navigation-entry-points-and-cannot-access-any-admin-routes-pages-treat-admin-pages-as-non-existent-for-normal-users",
-      "featureTitle": "Implement strict role-based access control (RBAC) in the frontend so that users without admin permissions cannot see any admin navigation entry points and cannot access any admin routes/pages (treat admin pages as non-existent for normal users).",
+      "featureId": "feature-add-a-consistent-blurred-dimmed-backdrop-effect-whenever-an-overlay-ui-is-open-e-g-modal-dialogs-like-profilesetupmodal-and-slide-over-sheets-so-the-underlying-page-is-visually-de-emphasized-and-focus-stays-on-the-active-popup",
+      "featureTitle": "Add a consistent blurred + dimmed backdrop effect whenever an overlay UI is open (e.g., modal dialogs like ProfileSetupModal and slide-over sheets), so the underlying page is visually de-emphasized and focus stays on the active popup.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/auth/AdminRouteGuard.tsx",
-        "frontend/src/components/layout/AppLayout.tsx",
-        "frontend/src/pages/UnauthorizedPage.tsx",
-        "frontend/src/pages/admin/AdminDashboardPage.tsx",
-        "frontend/src/pages/admin/AdminUsersPage.tsx",
-        "frontend/src/pages/admin/AdminWheelConfigPage.tsx",
-        "frontend/src/pages/admin/AdminWithdrawalsPage.tsx"
+        "frontend/src/index.css"
       ],
       "components": [
         "authorization@4.0.0",
@@ -25,133 +18,7 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-14"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-replace-the-stripe-payment-flow-with-a-razorpay-payment-flow-that-supports-upi-and-indian-banking-methods-for-buying-credits-including-backend-verified-payment-completion-before-granting-credits",
-      "featureTitle": "Replace the Stripe payment flow with a Razorpay payment flow that supports UPI and Indian banking methods for buying credits, including backend-verified payment completion before granting credits.",
-      "files": [
-        "frontend/src/components/admin/PaymentSetup.tsx",
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/BuyCreditsPage.tsx",
-        "frontend/src/pages/admin/AdminDashboardPage.tsx",
-        "frontend/src/pages/payments/PaymentFailurePage.tsx",
-        "frontend/src/pages/payments/PaymentSuccessPage.tsx",
-        "frontend/src/utils/razorpay.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-16"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-change-site-wide-currency-display-and-payment-amounts-from-usd-to-inr-including-buy-credits-package-displays-payment-payload-currency-and-any-user-facing-pricing-text",
-      "featureTitle": "Change site-wide currency display and payment amounts from USD to INR (₹), including Buy Credits package displays, payment payload currency, and any user-facing pricing text.",
-      "files": [
-        "frontend/src/pages/BuyCreditsPage.tsx",
-        "frontend/src/pages/payments/PaymentFailurePage.tsx",
-        "frontend/src/pages/payments/PaymentSuccessPage.tsx",
-        "frontend/src/utils/currency.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-17"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-upgrade-the-dashboard-admin-and-main-app-ui-to-a-premium-dark-mode-aesthetic-with-subtle-entry-animations-fade-slide-and-refined-hover-tap-effects-on-interactive-elements-while-keeping-user-facing-text-in-english",
-      "featureTitle": "Upgrade the dashboard/admin and main app UI to a premium dark-mode aesthetic with subtle entry animations (fade/slide) and refined hover/tap effects on interactive elements, while keeping user-facing text in English.",
-      "files": [
-        "frontend/src/index.css",
-        "frontend/src/pages/GamePage.tsx",
-        "frontend/src/pages/ProfilePage.tsx",
-        "frontend/src/pages/TransactionsPage.tsx",
-        "frontend/src/pages/WalletPage.tsx",
-        "frontend/src/pages/admin/AdminDashboardPage.tsx",
-        "frontend/src/pages/admin/AdminUsersPage.tsx",
-        "frontend/src/pages/admin/AdminWheelConfigPage.tsx",
-        "frontend/src/pages/admin/AdminWithdrawalsPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-18"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-redesign-the-spin-wheel-experience-to-look-elegant-and-professional-high-end-betting-vibe-with-gold-metallic-accents-smoother-feeling-rotation-and-a-distinct-winning-celebration-animation-while-keeping-the-outcome-server-authoritative",
-      "featureTitle": "Redesign the Spin Wheel experience to look elegant and professional (high-end betting vibe) with gold/metallic accents, smoother-feeling rotation, and a distinct winning celebration animation, while keeping the outcome server-authoritative.",
-      "files": [
-        "frontend/src/components/game/SpinWheel.tsx",
-        "frontend/src/pages/GamePage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-19"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-a-mobile-first-responsive-layout-that-feels-app-like-for-the-primary-indian-mobile-audience-including-a-bottom-navigation-bar-and-touch-friendly-controls-across-the-app",
-      "featureTitle": "Implement a mobile-first responsive layout that feels app-like for the primary Indian mobile audience, including a bottom navigation bar and touch-friendly controls across the app.",
-      "files": [
-        "frontend/src/components/layout/AppLayout.tsx",
-        "frontend/src/pages/BuyCreditsPage.tsx",
-        "frontend/src/pages/GamePage.tsx",
-        "frontend/src/pages/WalletPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-20"
+        "REQ-1"
       ],
       "confidence": "high"
     }

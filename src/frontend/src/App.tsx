@@ -17,9 +17,11 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminWheelConfigPage from './pages/admin/AdminWheelConfigPage';
 import AdminWithdrawalsPage from './pages/admin/AdminWithdrawalsPage';
+import AdminManualPaymentRequestsPage from './pages/admin/AdminManualPaymentRequestsPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import ProfileSetupModal from './components/auth/ProfileSetupModal';
 import AdminRouteGuard from './components/auth/AdminRouteGuard';
+import PremiumSpinner from './components/common/PremiumSpinner';
 
 const rootRoute = createRootRoute({
   component: AppLayout
@@ -119,6 +121,16 @@ const adminWithdrawalsRoute = createRoute({
   )
 });
 
+const adminManualPaymentsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/manual-payments',
+  component: () => (
+    <AdminRouteGuard>
+      <AdminManualPaymentRequestsPage />
+    </AdminRouteGuard>
+  )
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   walletRoute,
@@ -132,7 +144,8 @@ const routeTree = rootRoute.addChildren([
   adminDashboardRoute,
   adminUsersRoute,
   adminWheelConfigRoute,
-  adminWithdrawalsRoute
+  adminWithdrawalsRoute,
+  adminManualPaymentsRoute
 ]);
 
 const router = createRouter({ routeTree });
@@ -148,12 +161,13 @@ function AuthenticatedApp() {
   const { identity } = useInternetIdentity();
   const isAuthenticated = !!identity;
 
+  // Show profile setup modal only for new users (when profile is null)
   const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null;
 
   return (
     <>
       <RouterProvider router={router} />
-      {showProfileSetup && <ProfileSetupModal />}
+      {showProfileSetup && <ProfileSetupModal open={showProfileSetup} />}
     </>
   );
 }
@@ -167,7 +181,7 @@ export default function App() {
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
         <div className="flex h-screen items-center justify-center bg-background">
           <div className="text-center">
-            <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+            <PremiumSpinner size="xl" className="mx-auto mb-4" />
             <p className="text-muted-foreground">Initializing...</p>
           </div>
         </div>

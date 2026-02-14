@@ -77,7 +77,9 @@ export default {
                 mono: ['JetBrains Mono', 'monospace']
             },
             boxShadow: {
-                xs: '0 1px 2px 0 rgba(0,0,0,0.05)'
+                xs: '0 1px 2px 0 rgba(0,0,0,0.05)',
+                'premium': '0 4px 12px oklch(0 0 0 / 0.3), 0 0 0 1px oklch(0.75 0.15 45 / 0.1)',
+                'premium-lg': '0 8px 24px oklch(0 0 0 / 0.4), 0 0 0 1px oklch(0.75 0.15 45 / 0.15)'
             },
             keyframes: {
                 'accordion-down': {

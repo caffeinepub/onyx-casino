@@ -19,7 +19,7 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background/95" />
       
       <div className="relative z-10 w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 animate-fade-in">
           <img 
             src="/assets/generated/onyx-wordmark.dim_1024x256.png" 
             alt="ONYX Casino" 
@@ -32,7 +32,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <Card className="border-primary/20 shadow-2xl backdrop-blur-sm bg-card/95">
+        <Card className="premium-surface shadow-premium-lg backdrop-blur-sm animate-fade-in" style={{ animationDelay: '100ms' }}>
           <CardHeader className="text-center space-y-2">
             <CardTitle className="text-2xl font-bold">Welcome to ONYX</CardTitle>
             <CardDescription className="text-base">
@@ -45,7 +45,7 @@ export default function LoginPage() {
                 onClick={login}
                 disabled={isLoggingIn}
                 size="lg"
-                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
+                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-premium hover:shadow-premium-lg transition-all duration-200 hover-lift"
               >
                 {isLoggingIn ? (
                   <>
@@ -82,7 +82,7 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground mt-6">
+        <p className="text-center text-xs text-muted-foreground mt-6 animate-fade-in" style={{ animationDelay: '200ms' }}>
           By signing in, you agree to our terms of service and privacy policy
         </p>
       </div>

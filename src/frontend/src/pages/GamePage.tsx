@@ -1,175 +1,172 @@
 import { useState } from 'react';
-import { useGetCallerUserProfile, useSpinWheel } from '../hooks/useQueries';
+import { useSpinWheel, useGetCallerUserProfile } from '../hooks/useQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import SpinWheel from '../components/game/SpinWheel';
 import BalanceTicker from '../components/wallet/BalanceTicker';
-import { toast } from 'sonner';
 import { Coins, TrendingUp, TrendingDown } from 'lucide-react';
-import type { GameOutcome } from '../backend';
+import { toast } from 'sonner';
+import { GameOutcome } from '../backend';
+import PremiumSpinner from '../components/common/PremiumSpinner';
 
 export default function GamePage() {
-  const { data: profile, isLoading } = useGetCallerUserProfile();
+  const { data: profile, isLoading: profileLoading } = useGetCallerUserProfile();
   const spinWheel = useSpinWheel();
-  const [lastResult, setLastResult] = useState<{ outcome: GameOutcome; profit: bigint } | null>(null);
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [lastOutcome, setLastOutcome] = useState<GameOutcome | undefined>(undefined);
+
+  const balance = profile?.credits ? Number(profile.credits) : 0;
 
   const handleSpin = async () => {
+    if (balance < 50) {
+      toast.error('Insufficient balance! Minimum 50 credits required.');
+      return;
+    }
+
+    setIsSpinning(true);
+    setLastOutcome(undefined);
+
     try {
       const result = await spinWheel.mutateAsync();
-      setLastResult({ outcome: result.outcome, profit: result.profit });
-      
-      const profitNum = Number(result.profit);
-      if (profitNum > 0) {
-        toast.success(`You won ${profitNum} credits!`, {
-          description: `Outcome: ${result.outcome.toUpperCase()}`
+      setLastOutcome(result.outcome);
+
+      const profit = Number(result.profit);
+      if (profit > 0) {
+        toast.success(`You won ${profit} credits!`, {
+          description: `New balance: ${Number(result.balanceAfterSpin).toLocaleString()} credits`
         });
-      } else if (profitNum < 0) {
-        toast.error(`You lost ${Math.abs(profitNum)} credits`, {
-          description: `Outcome: ${result.outcome.toUpperCase()}`
+      } else if (profit < 0) {
+        toast.error(`You lost ${Math.abs(profit)} credits`, {
+          description: `New balance: ${Number(result.balanceAfterSpin).toLocaleString()} credits`
         });
       } else {
-        toast.info('Break even!', {
-          description: `Outcome: ${result.outcome.toUpperCase()}`
+        toast.info('No change in balance', {
+          description: `Balance: ${Number(result.balanceAfterSpin).toLocaleString()} credits`
         });
       }
     } catch (error: any) {
-      toast.error(error.message || 'Spin failed');
+      toast.error(error.message || 'Failed to spin wheel');
+    } finally {
+      setTimeout(() => setIsSpinning(false), 500);
     }
   };
 
-  if (isLoading) {
+  if (profileLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
+          <PremiumSpinner size="xl" className="mx-auto mb-4" />
           <p className="text-muted-foreground">Loading game...</p>
         </div>
       </div>
     );
   }
 
-  const balance = profile?.credits ? Number(profile.credits) : 0;
-  const canSpin = balance >= 50 && !spinWheel.isPending;
-
   return (
     <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
-      {/* Balance Display */}
-      <Card className="border-primary/20 bg-gradient-to-br from-card to-card/50 animate-fade-in">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Coins className="h-5 w-5 text-primary" />
-            Your Balance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BalanceTicker balance={balance} />
-          {balance < 50 && (
-            <p className="text-sm text-destructive mt-2">
-              Insufficient balance. Minimum 50 credits required to spin.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      <div className="animate-fade-in">
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">Spin & Win</h1>
+        <p className="text-sm md:text-base text-muted-foreground">Test your luck on the wheel</p>
+      </div>
 
-      {/* Wheel */}
-      <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+      <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
+        <Card className="border-primary/20 bg-gradient-to-br from-card to-card/50 animate-fade-in lg:col-span-2" style={{ animationDelay: '50ms' }}>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+              <Coins className="h-5 w-5 text-primary" />
+              Current Balance
+            </CardTitle>
+            <CardDescription className="text-xs md:text-sm">Your available credits</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BalanceTicker balance={balance} />
+          </CardContent>
+        </Card>
+
         <Card className="border-primary/20 animate-fade-in" style={{ animationDelay: '100ms' }}>
-          <CardHeader>
-            <CardTitle>Spin Wheel</CardTitle>
-            <CardDescription>50 credits per spin</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg md:text-xl">Bet Amount</CardTitle>
+            <CardDescription className="text-xs md:text-sm">Per spin</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col items-center gap-6">
-            <SpinWheel 
-              isSpinning={spinWheel.isPending} 
-              outcome={lastResult?.outcome}
-            />
-            <Button
-              onClick={handleSpin}
-              disabled={!canSpin}
-              size="lg"
-              className="w-full max-w-xs h-14 text-lg font-bold bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover-lift touch-friendly"
-            >
-              {spinWheel.isPending ? (
-                <>
-                  <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                  Spinning...
-                </>
-              ) : (
-                <>
-                  <Coins className="mr-2 h-5 w-5" />
-                  Spin (50 Credits)
-                </>
-              )}
-            </Button>
+          <CardContent>
+            <p className="text-3xl md:text-4xl font-bold text-primary">50</p>
+            <p className="text-xs md:text-sm text-muted-foreground mt-1">Credits</p>
           </CardContent>
         </Card>
+      </div>
 
-        {/* Game Info */}
-        <Card className="border-primary/20 animate-fade-in" style={{ animationDelay: '200ms' }}>
-          <CardHeader>
-            <CardTitle>Payouts</CardTitle>
-            <CardDescription>Multipliers for 50 credit bet</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent/70 transition-colors">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-chart-4" />
-                  <span className="font-medium">Dragon</span>
-                </div>
-                <div className="flex items-center gap-2 text-chart-4">
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="font-bold">1.96x (+48)</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent/70 transition-colors">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-chart-2" />
-                  <span className="font-medium">Tiger</span>
-                </div>
-                <div className="flex items-center gap-2 text-chart-2">
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="font-bold">1.4x (+20)</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent/70 transition-colors">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-chart-5" />
-                  <span className="font-medium">Crit</span>
-                </div>
-                <div className="flex items-center gap-2 text-chart-5">
-                  <TrendingDown className="h-4 w-4" />
-                  <span className="font-bold">0.5x (-25)</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50 hover:bg-accent/70 transition-colors">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-muted-foreground" />
-                  <span className="font-medium">Miss</span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <TrendingDown className="h-4 w-4" />
-                  <span className="font-bold">0x (-50)</span>
-                </div>
-              </div>
-            </div>
+      <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="lg:col-span-2 space-y-4 md:space-y-6">
+          <Card className="border-primary/20 premium-surface animate-fade-in" style={{ animationDelay: '150ms' }}>
+            <CardContent className="p-4 md:p-6">
+              <SpinWheel outcome={lastOutcome} isSpinning={isSpinning} />
+            </CardContent>
+          </Card>
 
-            {lastResult && (
-              <div className="mt-6 p-4 rounded-lg bg-primary/10 border border-primary/20 animate-fade-in">
-                <p className="text-sm font-medium mb-1">Last Result</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold capitalize">{lastResult.outcome}</span>
-                  <span className={`text-lg font-bold ${Number(lastResult.profit) >= 0 ? 'text-chart-4' : 'text-destructive'}`}>
-                    {Number(lastResult.profit) >= 0 ? '+' : ''}{Number(lastResult.profit)}
-                  </span>
-                </div>
-              </div>
+          <Button
+            onClick={handleSpin}
+            disabled={isSpinning || balance < 50}
+            size="lg"
+            className="w-full h-14 md:h-16 text-base md:text-lg font-bold hover-lift touch-friendly shadow-premium-lg animate-fade-in"
+            style={{ animationDelay: '200ms' }}
+          >
+            {isSpinning ? (
+              <>
+                <PremiumSpinner size="sm" className="mr-2" />
+                Spinning...
+              </>
+            ) : (
+              'SPIN THE WHEEL'
             )}
-          </CardContent>
-        </Card>
+          </Button>
+        </div>
+
+        <div className="space-y-4 md:space-y-6">
+          <Card className="border-primary/20 animate-fade-in" style={{ animationDelay: '250ms' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                <TrendingUp className="h-5 w-5 text-chart-4" />
+                Payouts
+              </CardTitle>
+              <CardDescription className="text-xs md:text-sm">Win multipliers</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between items-center p-2 md:p-3 rounded-lg bg-accent/50">
+                <span className="font-medium text-sm md:text-base">🐯 Tiger</span>
+                <span className="text-chart-4 font-bold text-sm md:text-base">1.4x</span>
+              </div>
+              <div className="flex justify-between items-center p-2 md:p-3 rounded-lg bg-accent/50">
+                <span className="font-medium text-sm md:text-base">🐉 Dragon</span>
+                <span className="text-chart-4 font-bold text-sm md:text-base">1.96x</span>
+              </div>
+              <div className="flex justify-between items-center p-2 md:p-3 rounded-lg bg-accent/50">
+                <span className="font-medium text-sm md:text-base">⚡ Crit</span>
+                <span className="text-chart-5 font-bold text-sm md:text-base">0.5x</span>
+              </div>
+              <div className="flex justify-between items-center p-2 md:p-3 rounded-lg bg-accent/50">
+                <span className="font-medium text-sm md:text-base">❌ Miss</span>
+                <span className="text-chart-5 font-bold text-sm md:text-base">0x</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/20 animate-fade-in" style={{ animationDelay: '300ms' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                <TrendingDown className="h-5 w-5 text-primary" />
+                How to Play
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
+                <li>• Each spin costs 50 credits</li>
+                <li>• Land on Tiger or Dragon to win</li>
+                <li>• Crit returns half your bet</li>
+                <li>• Miss loses your bet</li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

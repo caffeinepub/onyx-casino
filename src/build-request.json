@@ -1,176 +1,38 @@
 {
   "kind": "build_request",
-  "title": "Premium India-focused mobile betting refinement: strict RBAC hiding admin UI, Razorpay (UPI) payments, INR currency, dark-mode UI polish + spin wheel redesign",
+  "title": "Blur/dim background behind popups and modals to improve focus",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-14",
-      "text": "Implement strict role-based access control (RBAC) in the frontend so that users without admin permissions cannot see any admin navigation entry points and cannot access any admin routes/pages (treat admin pages as non-existent for normal users).",
+      "id": "REQ-1",
+      "text": "Add a consistent blurred + dimmed backdrop effect whenever an overlay UI is open (e.g., modal dialogs like ProfileSetupModal and slide-over sheets), so the underlying page is visually de-emphasized and focus stays on the active popup.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Implement Role-Based Access Control (RBAC). Ensure all Administrative controls and dashboards are strictly hidden from \"Normal User\" roles."
+          "fix this blur the background while poping up anything on the screen so that focus comes on that thing"
         ]
       },
       "acceptanceCriteria": [
-        "When `useIsCallerAdmin()` resolves to false, the AppLayout shows no Admin navigation item in any viewport (desktop top nav and mobile nav).",
-        "Direct navigation to /admin, /admin/users, /admin/wheel-config, or /admin/withdrawals as a non-admin does not render admin UI; the user is redirected to a non-admin route (e.g., /) or shown a generic not-found/unauthorized page that does not reveal admin dashboard content.",
-        "No admin-only components (e.g., payment configuration) are visible to non-admins anywhere in the app."
-      ]
-    },
-    {
-      "id": "REQ-15",
-      "text": "Enforce RBAC on the backend for all admin-only operations and payment-configuration operations, ensuring only authorized admins can configure payment settings and only authorized users can create/verify payment purchases.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Implement Role-Based Access Control (RBAC). Ensure all Administrative controls and dashboards are strictly hidden from \"Normal User\" roles."
-        ]
-      },
-      "acceptanceCriteria": [
-        "All admin-only backend methods trap with an authorization error when called by non-admin principals.",
-        "Payment configuration setters/getters (new Razorpay config) are admin-only.",
-        "Payment purchase initiation and verification endpoints are user-only and cannot be invoked by anonymous/unauthorized callers."
-      ]
-    },
-    {
-      "id": "REQ-16",
-      "text": "Replace the Stripe payment flow with a Razorpay payment flow that supports UPI and Indian banking methods for buying credits, including backend-verified payment completion before granting credits.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Replace the current Stripe integration with Razorpay. Ensure it supports UPI and local Indian banking methods.",
-          "Purchased credits must be granted only after backend-verified payment completion."
-        ]
-      },
-      "acceptanceCriteria": [
-        "The frontend Buy Credits flow no longer calls `createCheckoutSession` / Stripe session APIs.",
-        "A new Razorpay-based purchase flow is implemented where the backend creates/initiates a Razorpay order/payment intent and the frontend completes the payment using Razorpay checkout with UPI/bank methods available.",
-        "Credits are granted only after the backend verifies the Razorpay payment (e.g., signature/payment status verification) and records a deposit transaction.",
-        "Stripe configuration UI and Stripe-related queries/mutations are removed or replaced with Razorpay equivalents (admin can configure Razorpay credentials/settings).",
-        "Payment success/failure pages continue to work with Razorpay and refresh user profile/transactions after successful verification."
-      ]
-    },
-    {
-      "id": "REQ-17",
-      "text": "Change site-wide currency display and payment amounts from USD to INR (₹), including Buy Credits package displays, payment payload currency, and any user-facing pricing text.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Change the site-wide currency from USD to INR (₹)."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Buy Credits package prices display in INR with the ₹ symbol (not $).",
-        "Any user-facing copy referencing USD is updated to INR in English.",
-        "Payment initiation uses INR currency values (and correct subunits as required by the Razorpay integration).",
-        "Transactions and any purchase confirmations that show amounts use INR formatting consistently."
-      ]
-    },
-    {
-      "id": "REQ-18",
-      "text": "Upgrade the dashboard/admin and main app UI to a premium dark-mode aesthetic with subtle entry animations (fade/slide) and refined hover/tap effects on interactive elements, while keeping user-facing text in English.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Dashboard: Upgrade the UI to a \"Dark Mode\" premium aesthetic. Add subtle entry animations (e.g., fade-ins) and hover effects on buttons."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Primary screens (Game, Wallet, Transactions, Profile, Buy Credits, Admin pages) reflect a cohesive premium dark theme using existing Tailwind token system.",
-        "Key content blocks (cards, page headers, key widgets) animate in subtly on page mount (e.g., fade-in + slight translate).",
-        "Buttons and clickable cards have clear hover (desktop) and active/tap (mobile) states without harming accessibility or readability.",
-        "All new/updated user-facing text remains English."
-      ]
-    },
-    {
-      "id": "REQ-19",
-      "text": "Redesign the Spin Wheel experience to look elegant and professional (high-end betting vibe) with gold/metallic accents, smoother-feeling rotation, and a distinct winning celebration animation, while keeping the outcome server-authoritative.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "The Spin Wheel: Redesign the wheel to look elegant and professional (high-end betting vibe). Use gold/metallic accents, smooth rotation physics, and a \"winning\" celebration animation."
-        ]
-      },
-      "acceptanceCriteria": [
-        "SpinWheel visuals are updated to a more premium look (gold/metallic accents) using static assets and/or CSS enhancements.",
-        "The rotation animation feels smoother/more physical (e.g., improved easing, optional anticipation/settle) but still ends precisely on the backend-returned outcome segment.",
-        "A winning celebration animation is shown when the outcome indicates a win (e.g., tiger/dragon), and does not trigger on losing outcomes (miss/crit).",
-        "The wheel remains server-authoritative: the frontend never determines the outcome segment on its own."
-      ]
-    },
-    {
-      "id": "REQ-20",
-      "text": "Implement a mobile-first responsive layout that feels app-like for the primary Indian mobile audience, including a bottom navigation bar and touch-friendly controls across the app.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Prioritize a Mobile-First Responsive Design. The UI should feel like a native mobile app, featuring a bottom navigation bar and touch-friendly buttons."
-        ]
-      },
-      "acceptanceCriteria": [
-        "On small screens, primary navigation is accessible via a persistent bottom navigation bar covering: Game, Wallet, Transactions, Profile, Buy Credits (and Admin only for admins).",
-        "Bottom navigation indicates the active route and is usable with one-handed touch (adequate hit targets and spacing).",
-        "Page layouts avoid cramped spacing on mobile; key buttons/CTAs are sized for touch and do not overflow.",
-        "Desktop/tablet navigation continues to work (existing header/top nav can remain or be adapted) without regressions."
+        "When ProfileSetupModal is open, the entire app content behind it is visibly dimmed and blurred (not just darkened).",
+        "When the mobile navigation Sheet is open (hamburger menu), the entire app content behind it is visibly dimmed and blurred.",
+        "Backdrop styling is applied globally (via CSS overrides/theme), without editing files under frontend/src/components/ui (immutable).",
+        "Overlay blur/dim does not blur the modal/sheet content itself—only the background behind the overlay."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; only add backend/migration.mo if state upgrades are required.",
-    "Do not modify frontend files under immutablePaths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
-    "Generated/edited images must be served as static assets from frontend/public/assets/generated (never from the backend).",
-    "Use English for any user-facing text.",
-    "Do not keep Stripe as the active payment provider; migrate the app’s buy-credits/deposit flow to Razorpay."
+    "Do not edit any files under frontend/src/components/ui (Shadcn/Radix UI sources are immutable).",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Adding third-party authentication providers beyond Internet Identity.",
-    "Implementing real-time features (WebSockets, push notifications, chat).",
-    "Implementing or completing unrelated admin modules (e.g., fully building AdminWithdrawals workflows) unless required by the Razorpay replacement.",
-    "Changing core game math/segment definitions unless needed for the wheel visual/animation polish."
+    "Changing backend logic or adding new backend endpoints.",
+    "Redesigning modal layouts or adding new popup types beyond ensuring existing overlays have a blurred/dimmed backdrop."
   ],
   "imageRequirements": {
-    "required": [
-      "Gold metallic wheel pointer icon (spin-wheel-pointer-gold.dim_512x512.png)",
-      "Premium dark confetti/spark burst overlay (win-celebration-burst.dim_1024x1024.png)"
-    ],
-    "edits": [
-      "Elegant high-end gold/metallic wheel face redesign (spin-wheel-face.dim_1024x1024.png > spin-wheel-face.dim_1024x1024.png)"
-    ]
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [
-      "Target market localization for India: INR currency and Razorpay (UPI/banking).",
-      "Premium dark-mode, mobile-first app-like UX with bottom navigation.",
-      "Strict RBAC: admin controls hidden and inaccessible for normal users."
-    ],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
+    "required": [],
+    "edits": []
   }
 }

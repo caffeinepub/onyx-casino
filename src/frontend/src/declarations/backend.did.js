@@ -13,6 +13,12 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const RegistrationData = IDL.Record({
+  'couponCode' : IDL.Opt(IDL.Text),
+  'referrer' : IDL.Opt(IDL.Principal),
+  'displayName' : IDL.Text,
+  'dateOfBirth' : IDL.Text,
+});
 export const ShoppingItem = IDL.Record({
   'productName' : IDL.Text,
   'currency' : IDL.Text,
@@ -20,22 +26,56 @@ export const ShoppingItem = IDL.Record({
   'priceInCents' : IDL.Nat,
   'productDescription' : IDL.Text,
 });
+export const ManualPaymentRequestStatus = IDL.Variant({
+  'pending' : IDL.Null,
+  'approved' : IDL.Null,
+  'declined' : IDL.Null,
+});
+export const Time = IDL.Int;
+export const ManualPaymentRequest = IDL.Record({
+  'id' : IDL.Nat,
+  'status' : ManualPaymentRequestStatus,
+  'user' : IDL.Principal,
+  'timestamp' : Time,
+  'amount' : IDL.Nat,
+});
 export const TransactionType = IDL.Variant({
   'deposit' : IDL.Null,
   'withdrawal' : IDL.Null,
   'gameSpin' : IDL.Null,
+  'referralBonus' : IDL.Null,
+  'couponBonus' : IDL.Null,
 });
 export const Transaction = IDL.Record({
   'id' : IDL.Nat,
   'transactionType' : TransactionType,
   'user' : IDL.Principal,
   'description' : IDL.Opt(IDL.Text),
+  'timestamp' : Time,
   'outcallType' : IDL.Opt(IDL.Text),
   'amount' : IDL.Nat,
 });
 export const UserProfile = IDL.Record({
+  'id' : IDL.Text,
+  'bonusGranted' : IDL.Bool,
+  'couponCode' : IDL.Opt(IDL.Text),
   'credits' : IDL.Nat,
+  'referrer' : IDL.Opt(IDL.Principal),
+  'kCheckerState' : IDL.Bool,
+  'displayName' : IDL.Text,
+  'referralBonusAvailed' : IDL.Bool,
+  'dateOfBirth' : IDL.Text,
+  'isEligibleForKidDiscount' : IDL.Bool,
+  'lastUpdateTime' : IDL.Int,
+  'creationTime' : IDL.Int,
+  'bonusCouponAvailed' : IDL.Bool,
+  'balanceUpdates' : IDL.Vec(IDL.Int),
+  'profileSetupCompleted' : IDL.Bool,
   'transactions' : IDL.Vec(Transaction),
+});
+export const ManualPaymentConfig = IDL.Record({
+  'qrImageReference' : IDL.Text,
+  'instructions' : IDL.Text,
 });
 export const StripeSessionStatus = IDL.Variant({
   'completed' : IDL.Record({
@@ -43,11 +83,6 @@ export const StripeSessionStatus = IDL.Variant({
     'response' : IDL.Text,
   }),
   'failed' : IDL.Record({ 'error' : IDL.Text }),
-});
-export const CreditTransaction = IDL.Record({
-  'description' : IDL.Text,
-  'outcallType' : IDL.Opt(IDL.Text),
-  'amount' : IDL.Nat,
 });
 export const StripeConfiguration = IDL.Record({
   'allowedCountries' : IDL.Vec(IDL.Text),
@@ -86,24 +121,71 @@ export const TransformationOutput = IDL.Record({
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addValidCouponCode' : IDL.Func([IDL.Text], [], []),
+  'adminUpdateCredits' : IDL.Func([IDL.Principal, IDL.Nat], [IDL.Nat], []),
+  'approveManualPayment' : IDL.Func([IDL.Nat], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'completeInitialProfileSetup' : IDL.Func([RegistrationData], [], []),
   'createCheckoutSession' : IDL.Func(
       [IDL.Vec(ShoppingItem), IDL.Text, IDL.Text],
       [IDL.Text],
       [],
     ),
+  'createManualPaymentRequest' : IDL.Func([IDL.Nat], [IDL.Nat], []),
+  'declineManualPayment' : IDL.Func([IDL.Nat], [], []),
+  'getAdminUserBalance' : IDL.Func(
+      [IDL.Principal, IDL.Nat],
+      [IDL.Nat],
+      ['query'],
+    ),
+  'getAllManualPaymentRequests' : IDL.Func(
+      [],
+      [IDL.Vec(ManualPaymentRequest)],
+      ['query'],
+    ),
+  'getAllUserTransactions' : IDL.Func([], [IDL.Vec(Transaction)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getCreditPackages' : IDL.Func(
+      [],
+      [
+        IDL.Vec(
+          IDL.Record({
+            'credits' : IDL.Nat,
+            'name' : IDL.Text,
+            'priceInrMultiplier' : IDL.Nat,
+          })
+        ),
+      ],
+      ['query'],
+    ),
   'getHouseEdgeValue' : IDL.Func([], [IDL.Nat], ['query']),
   'getLeaderboard' : IDL.Func(
       [],
       [IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Nat))],
       ['query'],
     ),
+  'getManualPaymentConfig' : IDL.Func(
+      [],
+      [IDL.Opt(ManualPaymentConfig)],
+      ['query'],
+    ),
+  'getManualPaymentRequest' : IDL.Func(
+      [IDL.Nat],
+      [ManualPaymentRequest],
+      ['query'],
+    ),
+  'getMyBalance' : IDL.Func([], [IDL.Nat], ['query']),
+  'getMyCreditTransactions' : IDL.Func([], [IDL.Vec(Transaction)], ['query']),
+  'getMyManualPaymentRequests' : IDL.Func(
+      [],
+      [IDL.Vec(ManualPaymentRequest)],
+      ['query'],
+    ),
   'getStripeSessionStatus' : IDL.Func([IDL.Text], [StripeSessionStatus], []),
   'getUserCreditTransactions' : IDL.Func(
       [IDL.Principal, IDL.Bool, IDL.Bool],
-      [IDL.Vec(CreditTransaction)],
+      [IDL.Vec(Transaction)],
       ['query'],
     ),
   'getUserProfile' : IDL.Func(
@@ -113,8 +195,11 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
+  'isValidCouponCode' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+  'removeValidCouponCode' : IDL.Func([IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'setHouseEdgeValue' : IDL.Func([IDL.Nat], [], []),
+  'setManualPaymentConfig' : IDL.Func([ManualPaymentConfig], [], []),
   'setStripeConfiguration' : IDL.Func([StripeConfiguration], [], []),
   'spinWheel' : IDL.Func([], [SpinResult], []),
   'transform' : IDL.Func(
@@ -132,6 +217,12 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const RegistrationData = IDL.Record({
+    'couponCode' : IDL.Opt(IDL.Text),
+    'referrer' : IDL.Opt(IDL.Principal),
+    'displayName' : IDL.Text,
+    'dateOfBirth' : IDL.Text,
+  });
   const ShoppingItem = IDL.Record({
     'productName' : IDL.Text,
     'currency' : IDL.Text,
@@ -139,22 +230,56 @@ export const idlFactory = ({ IDL }) => {
     'priceInCents' : IDL.Nat,
     'productDescription' : IDL.Text,
   });
+  const ManualPaymentRequestStatus = IDL.Variant({
+    'pending' : IDL.Null,
+    'approved' : IDL.Null,
+    'declined' : IDL.Null,
+  });
+  const Time = IDL.Int;
+  const ManualPaymentRequest = IDL.Record({
+    'id' : IDL.Nat,
+    'status' : ManualPaymentRequestStatus,
+    'user' : IDL.Principal,
+    'timestamp' : Time,
+    'amount' : IDL.Nat,
+  });
   const TransactionType = IDL.Variant({
     'deposit' : IDL.Null,
     'withdrawal' : IDL.Null,
     'gameSpin' : IDL.Null,
+    'referralBonus' : IDL.Null,
+    'couponBonus' : IDL.Null,
   });
   const Transaction = IDL.Record({
     'id' : IDL.Nat,
     'transactionType' : TransactionType,
     'user' : IDL.Principal,
     'description' : IDL.Opt(IDL.Text),
+    'timestamp' : Time,
     'outcallType' : IDL.Opt(IDL.Text),
     'amount' : IDL.Nat,
   });
   const UserProfile = IDL.Record({
+    'id' : IDL.Text,
+    'bonusGranted' : IDL.Bool,
+    'couponCode' : IDL.Opt(IDL.Text),
     'credits' : IDL.Nat,
+    'referrer' : IDL.Opt(IDL.Principal),
+    'kCheckerState' : IDL.Bool,
+    'displayName' : IDL.Text,
+    'referralBonusAvailed' : IDL.Bool,
+    'dateOfBirth' : IDL.Text,
+    'isEligibleForKidDiscount' : IDL.Bool,
+    'lastUpdateTime' : IDL.Int,
+    'creationTime' : IDL.Int,
+    'bonusCouponAvailed' : IDL.Bool,
+    'balanceUpdates' : IDL.Vec(IDL.Int),
+    'profileSetupCompleted' : IDL.Bool,
     'transactions' : IDL.Vec(Transaction),
+  });
+  const ManualPaymentConfig = IDL.Record({
+    'qrImageReference' : IDL.Text,
+    'instructions' : IDL.Text,
   });
   const StripeSessionStatus = IDL.Variant({
     'completed' : IDL.Record({
@@ -162,11 +287,6 @@ export const idlFactory = ({ IDL }) => {
       'response' : IDL.Text,
     }),
     'failed' : IDL.Record({ 'error' : IDL.Text }),
-  });
-  const CreditTransaction = IDL.Record({
-    'description' : IDL.Text,
-    'outcallType' : IDL.Opt(IDL.Text),
-    'amount' : IDL.Nat,
   });
   const StripeConfiguration = IDL.Record({
     'allowedCountries' : IDL.Vec(IDL.Text),
@@ -202,24 +322,71 @@ export const idlFactory = ({ IDL }) => {
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addValidCouponCode' : IDL.Func([IDL.Text], [], []),
+    'adminUpdateCredits' : IDL.Func([IDL.Principal, IDL.Nat], [IDL.Nat], []),
+    'approveManualPayment' : IDL.Func([IDL.Nat], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'completeInitialProfileSetup' : IDL.Func([RegistrationData], [], []),
     'createCheckoutSession' : IDL.Func(
         [IDL.Vec(ShoppingItem), IDL.Text, IDL.Text],
         [IDL.Text],
         [],
       ),
+    'createManualPaymentRequest' : IDL.Func([IDL.Nat], [IDL.Nat], []),
+    'declineManualPayment' : IDL.Func([IDL.Nat], [], []),
+    'getAdminUserBalance' : IDL.Func(
+        [IDL.Principal, IDL.Nat],
+        [IDL.Nat],
+        ['query'],
+      ),
+    'getAllManualPaymentRequests' : IDL.Func(
+        [],
+        [IDL.Vec(ManualPaymentRequest)],
+        ['query'],
+      ),
+    'getAllUserTransactions' : IDL.Func([], [IDL.Vec(Transaction)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getCreditPackages' : IDL.Func(
+        [],
+        [
+          IDL.Vec(
+            IDL.Record({
+              'credits' : IDL.Nat,
+              'name' : IDL.Text,
+              'priceInrMultiplier' : IDL.Nat,
+            })
+          ),
+        ],
+        ['query'],
+      ),
     'getHouseEdgeValue' : IDL.Func([], [IDL.Nat], ['query']),
     'getLeaderboard' : IDL.Func(
         [],
         [IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Nat))],
         ['query'],
       ),
+    'getManualPaymentConfig' : IDL.Func(
+        [],
+        [IDL.Opt(ManualPaymentConfig)],
+        ['query'],
+      ),
+    'getManualPaymentRequest' : IDL.Func(
+        [IDL.Nat],
+        [ManualPaymentRequest],
+        ['query'],
+      ),
+    'getMyBalance' : IDL.Func([], [IDL.Nat], ['query']),
+    'getMyCreditTransactions' : IDL.Func([], [IDL.Vec(Transaction)], ['query']),
+    'getMyManualPaymentRequests' : IDL.Func(
+        [],
+        [IDL.Vec(ManualPaymentRequest)],
+        ['query'],
+      ),
     'getStripeSessionStatus' : IDL.Func([IDL.Text], [StripeSessionStatus], []),
     'getUserCreditTransactions' : IDL.Func(
         [IDL.Principal, IDL.Bool, IDL.Bool],
-        [IDL.Vec(CreditTransaction)],
+        [IDL.Vec(Transaction)],
         ['query'],
       ),
     'getUserProfile' : IDL.Func(
@@ -229,8 +396,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
+    'isValidCouponCode' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+    'removeValidCouponCode' : IDL.Func([IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'setHouseEdgeValue' : IDL.Func([IDL.Nat], [], []),
+    'setManualPaymentConfig' : IDL.Func([ManualPaymentConfig], [], []),
     'setStripeConfiguration' : IDL.Func([StripeConfiguration], [], []),
     'spinWheel' : IDL.Func([], [SpinResult], []),
     'transform' : IDL.Func(

@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Settings, ArrowDownToLine } from 'lucide-react';
+import { Users, Settings, ArrowDownToLine, QrCode } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -67,6 +67,25 @@ export default function AdminDashboardPage() {
           <CardContent>
             <Button variant="outline" className="w-full touch-friendly">
               Manage
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card 
+          className="border-primary/20 hover:border-primary/50 transition-all cursor-pointer hover-lift animate-fade-in" 
+          onClick={() => navigate({ to: '/admin/manual-payments' })}
+          style={{ animationDelay: '250ms' }}
+        >
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <QrCode className="h-5 w-5 text-primary" />
+              Payment Requests
+            </CardTitle>
+            <CardDescription>Review and approve manual payments</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" className="w-full touch-friendly">
+              Manage Requests
             </Button>
           </CardContent>
         </Card>

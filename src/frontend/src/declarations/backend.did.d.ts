@@ -10,15 +10,30 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface CreditTransaction {
-  'description' : string,
-  'outcallType' : [] | [string],
-  'amount' : bigint,
-}
 export type GameOutcome = { 'tiger' : null } |
   { 'crit' : null } |
   { 'miss' : null } |
   { 'dragon' : null };
+export interface ManualPaymentConfig {
+  'qrImageReference' : string,
+  'instructions' : string,
+}
+export interface ManualPaymentRequest {
+  'id' : bigint,
+  'status' : ManualPaymentRequestStatus,
+  'user' : Principal,
+  'timestamp' : Time,
+  'amount' : bigint,
+}
+export type ManualPaymentRequestStatus = { 'pending' : null } |
+  { 'approved' : null } |
+  { 'declined' : null };
+export interface RegistrationData {
+  'couponCode' : [] | [string],
+  'referrer' : [] | [Principal],
+  'displayName' : string,
+  'dateOfBirth' : string,
+}
 export interface ShoppingItem {
   'productName' : string,
   'currency' : string,
@@ -40,17 +55,21 @@ export type StripeSessionStatus = {
     'completed' : { 'userPrincipal' : [] | [string], 'response' : string }
   } |
   { 'failed' : { 'error' : string } };
+export type Time = bigint;
 export interface Transaction {
   'id' : bigint,
   'transactionType' : TransactionType,
   'user' : Principal,
   'description' : [] | [string],
+  'timestamp' : Time,
   'outcallType' : [] | [string],
   'amount' : bigint,
 }
 export type TransactionType = { 'deposit' : null } |
   { 'withdrawal' : null } |
-  { 'gameSpin' : null };
+  { 'gameSpin' : null } |
+  { 'referralBonus' : null } |
+  { 'couponBonus' : null };
 export interface TransformationInput {
   'context' : Uint8Array,
   'response' : http_request_result,
@@ -61,7 +80,21 @@ export interface TransformationOutput {
   'headers' : Array<http_header>,
 }
 export interface UserProfile {
+  'id' : string,
+  'bonusGranted' : boolean,
+  'couponCode' : [] | [string],
   'credits' : bigint,
+  'referrer' : [] | [Principal],
+  'kCheckerState' : boolean,
+  'displayName' : string,
+  'referralBonusAvailed' : boolean,
+  'dateOfBirth' : string,
+  'isEligibleForKidDiscount' : boolean,
+  'lastUpdateTime' : bigint,
+  'creationTime' : bigint,
+  'bonusCouponAvailed' : boolean,
+  'balanceUpdates' : Array<bigint>,
+  'profileSetupCompleted' : boolean,
   'transactions' : Array<Transaction>,
 }
 export type UserRole = { 'admin' : null } |
@@ -75,25 +108,48 @@ export interface http_request_result {
 }
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'addValidCouponCode' : ActorMethod<[string], undefined>,
+  'adminUpdateCredits' : ActorMethod<[Principal, bigint], bigint>,
+  'approveManualPayment' : ActorMethod<[bigint], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'completeInitialProfileSetup' : ActorMethod<[RegistrationData], undefined>,
   'createCheckoutSession' : ActorMethod<
     [Array<ShoppingItem>, string, string],
     string
   >,
+  'createManualPaymentRequest' : ActorMethod<[bigint], bigint>,
+  'declineManualPayment' : ActorMethod<[bigint], undefined>,
+  'getAdminUserBalance' : ActorMethod<[Principal, bigint], bigint>,
+  'getAllManualPaymentRequests' : ActorMethod<[], Array<ManualPaymentRequest>>,
+  'getAllUserTransactions' : ActorMethod<[], Array<Transaction>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getCreditPackages' : ActorMethod<
+    [],
+    Array<
+      { 'credits' : bigint, 'name' : string, 'priceInrMultiplier' : bigint }
+    >
+  >,
   'getHouseEdgeValue' : ActorMethod<[], bigint>,
   'getLeaderboard' : ActorMethod<[], Array<[Principal, bigint]>>,
+  'getManualPaymentConfig' : ActorMethod<[], [] | [ManualPaymentConfig]>,
+  'getManualPaymentRequest' : ActorMethod<[bigint], ManualPaymentRequest>,
+  'getMyBalance' : ActorMethod<[], bigint>,
+  'getMyCreditTransactions' : ActorMethod<[], Array<Transaction>>,
+  'getMyManualPaymentRequests' : ActorMethod<[], Array<ManualPaymentRequest>>,
   'getStripeSessionStatus' : ActorMethod<[string], StripeSessionStatus>,
   'getUserCreditTransactions' : ActorMethod<
     [Principal, boolean, boolean],
-    Array<CreditTransaction>
+    Array<Transaction>
   >,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isStripeConfigured' : ActorMethod<[], boolean>,
+  'isValidCouponCode' : ActorMethod<[string], boolean>,
+  'removeValidCouponCode' : ActorMethod<[string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'setHouseEdgeValue' : ActorMethod<[bigint], undefined>,
+  'setManualPaymentConfig' : ActorMethod<[ManualPaymentConfig], undefined>,
   'setStripeConfiguration' : ActorMethod<[StripeConfiguration], undefined>,
   'spinWheel' : ActorMethod<[], SpinResult>,
   'transform' : ActorMethod<[TransformationInput], TransformationOutput>,

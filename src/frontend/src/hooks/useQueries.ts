@@ -1,6 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { UserProfile, SpinResult } from '../backend';
+import { RegistrationData, UserProfile, ManualPaymentConfig } from '../backend';
+import { Principal } from '@dfinity/principal';
 
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
@@ -12,28 +13,28 @@ export function useGetCallerUserProfile() {
       return actor.getCallerUserProfile();
     },
     enabled: !!actor && !actorFetching,
-    retry: false
+    retry: false,
   });
 
   return {
     ...query,
     isLoading: actorFetching || query.isLoading,
-    isFetched: !!actor && query.isFetched
+    isFetched: !!actor && query.isFetched,
   };
 }
 
-export function useSaveCallerUserProfile() {
+export function useCompleteInitialProfileSetup() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (profile: UserProfile) => {
+    mutationFn: async (data: RegistrationData) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.saveCallerUserProfile(profile);
+      await actor.completeInitialProfileSetup(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-    }
+    },
   });
 }
 
@@ -41,28 +42,54 @@ export function useSpinWheel() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
-  return useMutation<SpinResult, Error>({
+  return useMutation({
     mutationFn: async () => {
       if (!actor) throw new Error('Actor not available');
       return actor.spinWheel();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
-    }
+      queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+    },
+  });
+}
+
+export function useGetLeaderboard() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getLeaderboard();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useIsCallerAdmin() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery({
+    queryKey: ['isAdmin'],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.isCallerAdmin();
+    },
+    enabled: !!actor && !isFetching,
   });
 }
 
 export function useGetHouseEdge() {
   const { actor, isFetching } = useActor();
 
-  return useQuery<bigint>({
+  return useQuery({
     queryKey: ['houseEdge'],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
       return actor.getHouseEdgeValue();
     },
-    enabled: !!actor && !isFetching
+    enabled: !!actor && !isFetching,
   });
 }
 
@@ -73,41 +100,152 @@ export function useSetHouseEdge() {
   return useMutation({
     mutationFn: async (value: bigint) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.setHouseEdgeValue(value);
+      await actor.setHouseEdgeValue(value);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['houseEdge'] });
-    }
+    },
   });
 }
 
-export function useIsCallerAdmin() {
+export function useGetCreditPackages() {
   const { actor, isFetching } = useActor();
 
-  return useQuery<boolean>({
-    queryKey: ['isAdmin'],
+  return useQuery({
+    queryKey: ['creditPackages'],
     queryFn: async () => {
-      if (!actor) return false;
-      try {
-        return await actor.isCallerAdmin();
-      } catch {
-        return false;
-      }
+      if (!actor) return [];
+      return actor.getCreditPackages();
     },
     enabled: !!actor && !isFetching,
-    retry: false
   });
 }
 
-export function useGetLeaderboard() {
+export function useGetManualPaymentConfig() {
   const { actor, isFetching } = useActor();
 
-  return useQuery<Array<[any, bigint]>>({
-    queryKey: ['leaderboard'],
+  return useQuery<ManualPaymentConfig | null>({
+    queryKey: ['manualPaymentConfig'],
     queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getLeaderboard();
+      if (!actor) return null;
+      return actor.getManualPaymentConfig();
     },
-    enabled: !!actor && !isFetching
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useSetManualPaymentConfig() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (config: ManualPaymentConfig) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.setManualPaymentConfig(config);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['manualPaymentConfig'] });
+    },
+  });
+}
+
+export function useCreateManualPaymentRequest() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (amount: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.createManualPaymentRequest(amount);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myManualPaymentRequests'] });
+    },
+  });
+}
+
+export function useGetManualPaymentRequest(requestId: bigint | null) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery({
+    queryKey: ['manualPaymentRequest', requestId?.toString()],
+    queryFn: async () => {
+      if (!actor || !requestId) return null;
+      return actor.getManualPaymentRequest(requestId);
+    },
+    enabled: !!actor && !isFetching && !!requestId,
+  });
+}
+
+export function useGetMyManualPaymentRequests() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery({
+    queryKey: ['myManualPaymentRequests'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getMyManualPaymentRequests();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetAllManualPaymentRequests() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery({
+    queryKey: ['allManualPaymentRequests'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllManualPaymentRequests();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useApproveManualPayment() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (requestId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.approveManualPayment(requestId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allManualPaymentRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+    },
+  });
+}
+
+export function useDeclineManualPayment() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (requestId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.declineManualPayment(requestId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allManualPaymentRequests'] });
+    },
+  });
+}
+
+export function useAdminUpdateCredits() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ user, newBalance }: { user: Principal; newBalance: bigint }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.adminUpdateCredits(user, newBalance);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+    },
   });
 }
