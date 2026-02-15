@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { RegistrationData, UserProfile, ManualPaymentConfig } from '../backend';
+import { RegistrationData, UserProfile, ManualPaymentConfig, StripeConfiguration } from '../backend';
 import { Principal } from '@dfinity/principal';
 
 export function useGetCallerUserProfile() {
@@ -51,6 +51,7 @@ export function useSpinWheel() {
       return actor.spinWheel();
     },
     onSuccess: () => {
+      // Invalidate profile to refresh balance
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
       queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
     },
@@ -259,6 +260,37 @@ export function useDeclineManualPayment() {
   });
 }
 
+export function useGetAllUserTransactions() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery({
+    queryKey: ['allUserTransactions'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllUserTransactions();
+    },
+    enabled: !!actor && !isFetching,
+    staleTime: 60000,
+    refetchOnMount: false,
+  });
+}
+
+export function useGetMyCreditTransactions() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery({
+    queryKey: ['myCreditTransactions'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getMyCreditTransactions();
+    },
+    enabled: !!actor && !isFetching,
+    staleTime: 30000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useAdminUpdateCredits() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -270,6 +302,37 @@ export function useAdminUpdateCredits() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+    },
+  });
+}
+
+export function useIsStripeConfigured() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery({
+    queryKey: ['isStripeConfigured'],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.isStripeConfigured();
+    },
+    enabled: !!actor && !isFetching,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useSetStripeConfiguration() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (config: StripeConfiguration) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.setStripeConfiguration(config);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['isStripeConfigured'] });
     },
   });
 }

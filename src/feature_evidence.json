@@ -2,12 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-global-app-layout-header-navigation-background-to-visually-match-the-uploaded-reference-image-style-dark-premium-casino-look-compact-pill-style-nav-items-and-a-right-side-status-balance-area",
-      "featureTitle": "Update the global app layout (header + navigation + background) to visually match the uploaded reference image style: dark premium casino look, compact pill-style nav items, and a right-side status/balance area.",
+      "featureId": "feature-ensure-the-spinner-is-clearly-visible-when-the-user-taps-the-spin-button-during-isspinning-showeffects-states-including-when-the-button-is-disabled-the-spinner-and-the-spinning-label-must-not-be-faded-out-by-disabled-styling-in-dark-mode",
+      "featureTitle": "Ensure the spinner is clearly visible when the user taps the Spin button (during `isSpinning` / `showEffects` states), including when the button is disabled. The spinner and the \"Spinning...\" label must not be faded out by disabled styling in dark mode.",
       "files": [
-        "frontend/src/components/layout/AppLayout.tsx",
-        "frontend/src/index.css",
-        "frontend/tailwind.config.js"
+        "frontend/src/pages/GamePage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -25,11 +23,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-redesign-the-game-page-ui-to-match-the-uploaded-reference-image-layout-and-hierarchy-marketing-hero-on-the-left-wheel-primary-cta-on-the-right-while-keeping-existing-game-functionality-unchanged",
-      "featureTitle": "Redesign the Game page UI to match the uploaded reference image layout and hierarchy (marketing hero on the left, wheel + primary CTA on the right), while keeping existing game functionality unchanged.",
+      "featureId": "feature-standardize-wheel-loading-feedback-so-users-always-see-an-obvious-loading-indicator-while-the-wheel-image-is-loading-or-slow-to-load-and-it-remains-visible-until-the-wheel-image-is-actually-rendered",
+      "featureTitle": "Standardize wheel loading feedback so users always see an obvious loading indicator while the wheel image is loading (or slow to load), and it remains visible until the wheel image is actually rendered.",
       "files": [
-        "frontend/src/index.css",
-        "frontend/src/pages/GamePage.tsx"
+        "frontend/src/components/game/SpinWheel.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -43,61 +40,6 @@
       ],
       "testIds": [
         "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-apply-the-same-reference-inspired-visual-system-consistently-across-all-user-and-admin-pages-typography-scale-card-surfaces-button-styles-page-headers-and-spacing-without-changing-features-or-flows",
-      "featureTitle": "Apply the same reference-inspired visual system consistently across all user and admin pages (typography scale, card surfaces, button styles, page headers, and spacing) without changing features or flows.",
-      "files": [
-        "frontend/src/components/common/PageHeader.tsx",
-        "frontend/src/index.css",
-        "frontend/src/pages/BuyCreditsPage.tsx",
-        "frontend/src/pages/ProfilePage.tsx",
-        "frontend/src/pages/TransactionsPage.tsx",
-        "frontend/src/pages/WalletPage.tsx",
-        "frontend/src/pages/WithdrawPage.tsx",
-        "frontend/src/pages/admin/AdminDashboardPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-fix-the-reported-slow-page-load-behavior-across-the-app-by-reducing-unnecessary-refetching-avoiding-full-page-loading-states-when-cached-data-exists-and-minimizing-expensive-work-during-route-transitions",
-      "featureTitle": "Fix the reported slow page load behavior across the app by reducing unnecessary refetching, avoiding full-page loading states when cached data exists, and minimizing expensive work during route transitions.",
-      "files": [
-        "frontend/src/components/auth/AdminRouteGuard.tsx",
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/BuyCreditsPage.tsx",
-        "frontend/src/pages/GamePage.tsx",
-        "frontend/src/pages/ProfilePage.tsx",
-        "frontend/src/pages/TransactionsPage.tsx",
-        "frontend/src/pages/WalletPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
       ],
       "confidence": "high"
     }

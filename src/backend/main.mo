@@ -10,6 +10,7 @@ import Stripe "stripe/stripe";
 import OutCall "http-outcalls/outcall";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
+import Iter "mo:core/Iter";
 
 
 
@@ -17,13 +18,11 @@ actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  // Persistent state
   let users = Map.empty<Principal, UserProfile>();
   let withdrawalRequests = Map.empty<Nat, RegistrationData>();
   let suspiciousActivityLog = Map.empty<Principal, [Text]>();
   let validCouponCodes = Map.empty<Text, Bool>();
 
-  // Manual payment types and state
   public type ManualPaymentRequestStatus = { #pending; #approved; #declined };
   public type ManualPaymentRequest = {
     id : Nat;
@@ -40,7 +39,6 @@ actor {
   let manualPaymentRequests = Map.empty<Nat, ManualPaymentRequest>();
   var manualPaymentConfig : ?ManualPaymentConfig = null;
 
-  // Types
   public type GameOutcome = {
     #tiger;
     #dragon;
@@ -123,9 +121,8 @@ actor {
 
   let creditConversionRate = 2;
   let baseBet = 50;
-  let bigCreditBonusThreshold = 250000;
-  let bigCreditBonusMultiplier = 1.4;
-  let withdrawalBonusThreshold = 300000;
+  let bigCreditBonusThreshold = 250_000;
+  let withdrawalBonusThreshold = 300_000;
   let couponBonusAmount = 100;
   let referralBonusAmount = 200;
 
@@ -139,7 +136,6 @@ actor {
     };
   };
 
-  // New admin function to update a user's credits balance
   public shared ({ caller }) func adminUpdateCredits(user : Principal, newBalance : Nat) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can perform this action");
@@ -159,7 +155,6 @@ actor {
     profile.credits;
   };
 
-  // Overhaul completeInitialProfileSetup to include bonus grant logic
   public shared ({ caller }) func completeInitialProfileSetup(registrationData : RegistrationData) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can complete profile setup");
@@ -182,7 +177,7 @@ actor {
       id = caller.toText();
       displayName = registrationData.displayName;
       dateOfBirth = registrationData.dateOfBirth;
-      credits = 100; // 100 free credits for all new users
+      credits = 100;
       transactions = [];
       couponCode = registrationData.couponCode;
       referrer = registrationData.referrer;
@@ -252,9 +247,7 @@ actor {
   func grantCouponBonus(user : Principal) {
     let profile = getUserProfileOrTrap(user);
 
-    if (profile.bonusCouponAvailed) {
-      return;
-    };
+    if (profile.bonusCouponAvailed) { return };
 
     let newTransaction : Transaction = {
       id = profile.transactions.size();
@@ -279,9 +272,7 @@ actor {
   func grantReferralBonus(referredUser : Principal, referrer : Principal) {
     let referredProfile = getUserProfileOrTrap(referredUser);
 
-    if (referredProfile.referralBonusAvailed) {
-      return;
-    };
+    if (referredProfile.referralBonusAvailed) { return };
 
     let updatedReferredProfile : UserProfile = {
       referredProfile with
@@ -319,9 +310,7 @@ actor {
         Runtime.trap("Insufficient balance for transaction");
       };
       newBalance -= -amount;
-    } else {
-      newBalance += amount;
-    };
+    } else { newBalance += amount };
 
     if (newBalance < 0) {
       Runtime.trap("Credit balance cannot be negative");
@@ -430,60 +419,33 @@ actor {
     let profile = getUserProfileOrTrap(caller);
 
     if (profile.credits < baseBet) { Runtime.trap("Insufficient funds, bet failed") };
-    let uncappedBet = baseBet * creditConversionRate;
 
     let spinResult = 7727;
     let outcome = determineWheelOutcome(spinResult, []);
-
-    var newBalance : Int = profile.credits - uncappedBet;
-    var prize = 0;
-    var profit = -Int.abs(uncappedBet);
+    var profit : Int = -Int.abs(baseBet);
 
     switch (outcome) {
       case (#tiger) {
-        let payout = uncappedBet * 140 / 100;
-        newBalance += payout;
-        prize := payout;
-        profit := payout - uncappedBet;
+        profit := baseBet * 140 / 100 - baseBet;
       };
       case (#dragon) {
-        let payout = uncappedBet * 196 / 100;
-        newBalance += payout;
-        prize := payout;
-        profit := payout - uncappedBet;
+        profit := baseBet * 196 / 100 - baseBet;
       };
-      case (#crit) {
-        let payout = uncappedBet / 2;
-        newBalance += payout;
-        profit := -Int.abs(payout);
-      };
-      case (#miss) { profit := -Int.abs(uncappedBet) };
+      case (#crit) { profit := -Int.abs((baseBet / 2) + baseBet) };
+      case (#miss) { profit := -Int.abs(baseBet) };
     };
 
-    if (newBalance < 0) { Runtime.trap("An error occurred when updating balance") };
-
-    let transactionId = profile.transactions.size();
-
-    let newTransaction : Transaction = {
-      id = transactionId;
-      user = caller;
-      transactionType = #gameSpin;
-      amount = if (profit < 0) { (-profit).toNat() } else { profit.toNat() };
-      description = switch (outcome) {
-        case (#tiger) { ?"Multiplier applied: Tiger" };
-        case (#dragon) { ?"Multiplier applied: Dragon" };
-        case (#crit) { ?"Multiplier applied: Crit" };
-        case (#miss) { ?"Multiplier applied: Miss" };
-      };
-      outcallType = null;
-      timestamp = Time.now();
+    if (profit < 0 and profile.credits < -profit) {
+      Runtime.trap("Insufficient balance for transaction");
     };
 
-    let updatedTransactions = profile.transactions.concat([newTransaction]);
-    let updatedProfile : UserProfile = {
+    let balanceAfterSpin : Nat = if (profit < 0) {
+      profile.credits - (-profit).toNat();
+    } else { profile.credits + profit.toNat() };
+
+    let updatedProfile = {
       profile with
-      credits = newBalance.toNat();
-      transactions = updatedTransactions;
+      credits = balanceAfterSpin;
     };
     users.add(caller, updatedProfile);
 
@@ -491,7 +453,7 @@ actor {
       user = caller;
       outcome;
       profit;
-      balanceAfterSpin = newBalance.toNat();
+      balanceAfterSpin;
     };
   };
 
@@ -628,6 +590,10 @@ actor {
   };
 
   public query ({ caller }) func getLeaderboard() : async [(Principal, Nat)] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view leaderboard");
+    };
+
     let leaderboard = users.toArray().map(
       func((principal, profile)) {
         (principal, profile.credits);
@@ -670,7 +636,7 @@ actor {
       },
       {
         name = "Premium";
-        credits = 22000;
+        credits = 22_000;
         priceInrMultiplier = 5500;
       },
       {
@@ -680,8 +646,8 @@ actor {
       },
       {
         name = "High Roller";
-        credits = 990000;
-        priceInrMultiplier = 50000;
+        credits = 990_000;
+        priceInrMultiplier = 50_000;
       },
     ];
   };
@@ -741,8 +707,6 @@ actor {
     await Stripe.createCheckoutSession(getStripeConfiguration(), caller, items, successUrl, cancelUrl, transform);
   };
 
-  // Manual QR payment request logic
-
   public shared ({ caller }) func createManualPaymentRequest(amount : Nat) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create payment requests");
@@ -789,7 +753,10 @@ actor {
     );
   };
 
-  public query func getManualPaymentConfig() : async ?ManualPaymentConfig {
+  public query ({ caller }) func getManualPaymentConfig() : async ?ManualPaymentConfig {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view payment configuration");
+    };
     manualPaymentConfig;
   };
 
@@ -812,11 +779,9 @@ actor {
           Runtime.trap("Payment must be pending to approve");
         };
 
-        // Update request status
         let updatedRequest = { request with status = #approved };
         manualPaymentRequests.add(requestId, updatedRequest);
 
-        // Record deposit transaction for user
         let profile = getUserProfileOrTrap(request.user);
         let transactionId = profile.transactions.size();
 

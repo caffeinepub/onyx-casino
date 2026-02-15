@@ -2,63 +2,31 @@
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
   "summary": "New project",
-  "architectural_notes": [
-    "UI updates should follow a single reference design consistently across all pages.",
-    "Performance work should focus on reducing overall page load time across the app."
-  ],
+  "architectural_notes": [],
   "known_issues": [
-    "All pages are taking too long to load (performance regression/issue reported by user)."
+    "Loading spinner/wheel is missing or not visible (user asked: \"where is the spinner\")."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-the-global-app-layout-header-navigation-background-to-visually-match-the-uploaded-reference-image-style-dark-premium-casino-look-compact-pill-style-nav-items-and-a-right-side-status-balance-area",
-      "title": "Update the global app layout (header + navigation + background) to visually match the uploaded reference image style: dark premium casino look, compact pill-style nav items, and a right-side status/balance area.",
+      "id": "feature-ensure-the-spinner-is-clearly-visible-when-the-user-taps-the-spin-button-during-isspinning-showeffects-states-including-when-the-button-is-disabled-the-spinner-and-the-spinning-label-must-not-be-faded-out-by-disabled-styling-in-dark-mode",
+      "title": "Ensure the spinner is clearly visible when the user taps the Spin button (during `isSpinning` / `showEffects` states), including when the button is disabled. The spinner and the \"Spinning...\" label must not be faded out by disabled styling in dark mode.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-redesign-the-game-page-ui-to-match-the-uploaded-reference-image-layout-and-hierarchy-marketing-hero-on-the-left-wheel-primary-cta-on-the-right-while-keeping-existing-game-functionality-unchanged",
-      "title": "Redesign the Game page UI to match the uploaded reference image layout and hierarchy (marketing hero on the left, wheel + primary CTA on the right), while keeping existing game functionality unchanged.",
+      "id": "feature-standardize-wheel-loading-feedback-so-users-always-see-an-obvious-loading-indicator-while-the-wheel-image-is-loading-or-slow-to-load-and-it-remains-visible-until-the-wheel-image-is-actually-rendered",
+      "title": "Standardize wheel loading feedback so users always see an obvious loading indicator while the wheel image is loading (or slow to load), and it remains visible until the wheel image is actually rendered.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
-    },
-    {
-      "id": "feature-apply-the-same-reference-inspired-visual-system-consistently-across-all-user-and-admin-pages-typography-scale-card-surfaces-button-styles-page-headers-and-spacing-without-changing-features-or-flows",
-      "title": "Apply the same reference-inspired visual system consistently across all user and admin pages (typography scale, card surfaces, button styles, page headers, and spacing) without changing features or flows.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-fix-the-reported-slow-page-load-behavior-across-the-app-by-reducing-unnecessary-refetching-avoiding-full-page-loading-states-when-cached-data-exists-and-minimizing-expensive-work-during-route-transitions",
-      "title": "Fix the reported slow page load behavior across the app by reducing unnecessary refetching, avoiding full-page loading states when cached data exists, and minimizing expensive work during route transitions.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
     }
   ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Update the UI to match the provided reference design across the app",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Investigate and fix slow page load performance across all pages",
-      "reqIds": [],
-      "status": "pending"
-    }
-  ],
-  "projectName": "Update UI to match provided reference and fix slow page load performance",
+  "new_feature_requests": [],
+  "projectName": "Make the spinning/loading spinner visible during wheel spins",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

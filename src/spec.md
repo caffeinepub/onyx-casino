@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Update the app UI to match the provided dark premium casino reference style and improve perceived performance by reducing unnecessary refetching and blocking loading states.
+**Goal:** Make loading/spinning feedback clearly visible during wheel spins and while wheel images load, especially in dark mode and disabled-button states.
 
 **Planned changes:**
-- Update the global layout (header/navigation/background) to match the reference: dark premium header surface, compact pill-style nav items with clear active state, and a right-side “Verified Secure” badge plus balance chip (with placeholder while loading).
-- Redesign the Game page layout and hierarchy to match the reference: left marketing hero (headline, description, jackpot badge), right wheel area, two quick-action buttons (Deposit Funds / View History), and a wide gradient primary spin CTA showing “50 credits”, while keeping existing game behavior unchanged.
-- Apply the same visual system across all user and admin pages (typography, spacing, page headers, card/panel surfaces, and button styles) without changing existing flows or user-facing text.
-- Improve page load/transition performance by reducing repeated React Query refetching, using cached data when available, avoiding full-page spinners, and limiting query invalidation/refetch during actor initialization—without backend interface changes.
+- Update the Spin button UI on GamePage so that when a spin is in progress (`isSpinning` / `showEffects`), it shows an animated spinner plus the text “Spinning...” with styling that remains high-contrast and fully visible even when the button is disabled.
+- Standardize wheel-area loading behavior so a visible loading indicator (spinner + short label) is shown until the wheel image is actually rendered.
+- Add a clear fallback state in the wheel area for wheel image load errors/timeouts (avoid showing a blank wheel area).
+- Implement the above by composing/overriding styles at usage sites (e.g., GamePage) or in non-immutable components (e.g., PremiumSpinner) without modifying files under `frontend/src/components/ui`.
 
-**User-visible outcome:** The app visually matches the provided premium casino reference across pages, the Game page has the new hero/wheel/CTA layout, and navigation between pages feels immediate with fewer blocking loading screens when data is already cached.
+**User-visible outcome:** When users tap Spin, they always see a clearly visible spinner and “Spinning...” label during the spin (even though the button is disabled), and they see an obvious loading indicator in the wheel area until the wheel image appears—with a clear fallback if the wheel image fails to load.

@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import SpinWheel from '../components/game/SpinWheel';
+import OutcomeEffects from '../components/game/OutcomeEffects';
 import { Sparkles, CreditCard, Receipt, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { GameOutcome } from '../backend';
@@ -15,9 +16,21 @@ export default function GamePage() {
   const { data: profile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
   const spinWheel = useSpinWheel();
   const [isSpinning, setIsSpinning] = useState(false);
-  const [lastOutcome, setLastOutcome] = useState<GameOutcome | undefined>(undefined);
+  const [lastOutcome, setLastOutcome] = useState<GameOutcome | null>(null);
+  const [showEffects, setShowEffects] = useState(false);
 
   const balance = profile?.credits ? Number(profile.credits) : 0;
+
+  const handleSpinComplete = () => {
+    // Wheel has stopped, now show outcome effects
+    setShowEffects(true);
+  };
+
+  const handleEffectComplete = () => {
+    // Effects are done, allow next spin
+    setShowEffects(false);
+    setIsSpinning(false);
+  };
 
   const handleSpin = async () => {
     if (balance < 50) {
@@ -25,13 +38,16 @@ export default function GamePage() {
       return;
     }
 
+    // Reset state for new spin
     setIsSpinning(true);
-    setLastOutcome(undefined);
+    setShowEffects(false);
+    setLastOutcome(null);
 
     try {
       const result = await spinWheel.mutateAsync();
       setLastOutcome(result.outcome);
 
+      // Show toast based on profit
       const profit = Number(result.profit);
       if (profit > 0) {
         toast.success(`You won ${profit} credits!`, {
@@ -48,8 +64,8 @@ export default function GamePage() {
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to spin wheel');
-    } finally {
-      setTimeout(() => setIsSpinning(false), 500);
+      setIsSpinning(false);
+      setLastOutcome(null);
     }
   };
 
@@ -74,8 +90,7 @@ export default function GamePage() {
 
           <div className="space-y-4">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              The Peak of <br />
-              <span className="text-gradient">Gaming</span>
+              <span className="text-gradient">The Peak of Betting</span>
             </h1>
             <p className="text-base md:text-lg text-muted-foreground max-w-md">
               Experience fair play and massive rewards on Nepal's premier gaming platform. Spin the wheel to test your destiny.
@@ -124,22 +139,34 @@ export default function GamePage() {
         {/* Right: Wheel + Spin Button */}
         <div className="space-y-6 animate-fade-in order-1 lg:order-2" style={{ animationDelay: '100ms' }}>
           <Card className="border-primary/20 premium-surface">
-            <CardContent className="p-6">
-              <SpinWheel outcome={lastOutcome} isSpinning={isSpinning} />
+            <CardContent className="p-6 flex items-center justify-center">
+              <div className="relative">
+                <SpinWheel 
+                  outcome={lastOutcome || undefined} 
+                  isSpinning={isSpinning}
+                  onSpinComplete={handleSpinComplete}
+                />
+                {showEffects && (
+                  <OutcomeEffects 
+                    outcome={lastOutcome} 
+                    onEffectComplete={handleEffectComplete}
+                  />
+                )}
+              </div>
             </CardContent>
           </Card>
 
           <Button
             onClick={handleSpin}
-            disabled={isSpinning || balance < 50}
+            disabled={isSpinning || showEffects || balance < 50}
             size="lg"
-            className="w-full h-16 text-lg font-bold hover-lift touch-friendly shadow-premium-lg bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/90 hover:to-primary/70"
+            className="w-full h-16 text-lg font-bold hover-lift touch-friendly shadow-premium-lg bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/90 hover:to-primary/70 disabled:opacity-100"
           >
-            {isSpinning ? (
-              <>
+            {isSpinning || showEffects ? (
+              <span className="flex items-center justify-center opacity-100">
                 <PremiumSpinner size="sm" className="mr-2" />
-                Spinning...
-              </>
+                <span className="text-foreground font-bold">Spinning...</span>
+              </span>
             ) : (
               <>
                 <TrendingUp className="mr-2 h-5 w-5" />

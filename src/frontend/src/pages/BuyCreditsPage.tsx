@@ -16,6 +16,7 @@ import { formatINR } from '../utils/currency';
 import { computeCreditsFromINR, arePackagesAvailable } from '../utils/creditPricing';
 import { ManualPaymentRequestStatus } from '../backend';
 import PremiumSpinner from '../components/common/PremiumSpinner';
+import { assetUrl } from '../utils/assetUrl';
 
 const QUICK_OFFERS = [
   { label: '₹100', amount: 100 },
@@ -108,6 +109,15 @@ export default function BuyCreditsPage() {
       return <Badge variant="default" className="gap-1 bg-chart-4 text-white"><CheckCircle2 className="h-3 w-3" />Approved</Badge>;
     }
     return <Badge variant="destructive" className="gap-1"><XCircle className="h-3 w-3" />Declined</Badge>;
+  };
+
+  // Resolve QR image URL: if it's a data URL, use directly; otherwise resolve as asset path
+  const getQRImageUrl = (qrImageReference: string): string => {
+    if (qrImageReference.startsWith('data:')) {
+      return qrImageReference;
+    }
+    // Legacy: treat as asset path
+    return assetUrl(qrImageReference);
   };
 
   return (
@@ -305,7 +315,7 @@ export default function BuyCreditsPage() {
               <>
                 <div className="flex justify-center">
                   <img
-                    src={paymentConfig.qrImageReference}
+                    src={getQRImageUrl(paymentConfig.qrImageReference)}
                     alt="Payment QR Code"
                     className="w-64 h-64 object-contain rounded-lg border border-border"
                   />

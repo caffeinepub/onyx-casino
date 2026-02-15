@@ -1,93 +1,35 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T01:30:54.553Z",
+  "generatedAt": "2026-02-15T21:27:24.523Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 2,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update the global app layout (header + navigation + background) to visually match the uploaded reference image style: dark premium casino look, compact pill-style nav items, and a right-side status/balance area.",
+        "summary": "Ensure the spinner is clearly visible when the user taps the Spin button (during `isSpinning` / `showEffects` states), including when the button is disabled. The spinner and the \"Spinning...\" label must not be faded out by disabled styling in dark mode.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/layout/AppLayout.tsx",
-          "frontend/src/index.css",
-          "frontend/tailwind.config.js"
+          "frontend/src/pages/GamePage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/layout/AppLayout.tsx",
-          "frontend/src/index.css",
-          "frontend/tailwind.config.js"
+          "frontend/src/pages/GamePage.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Redesign the Game page UI to match the uploaded reference image layout and hierarchy (marketing hero on the left, wheel + primary CTA on the right), while keeping existing game functionality unchanged.",
+        "summary": "Standardize wheel loading feedback so users always see an obvious loading indicator while the wheel image is loading (or slow to load), and it remains visible until the wheel image is actually rendered.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/GamePage.tsx",
-          "frontend/src/index.css"
+          "frontend/src/components/game/SpinWheel.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/GamePage.tsx",
-          "frontend/src/index.css"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Apply the same reference-inspired visual system consistently across all user and admin pages (typography scale, card surfaces, button styles, page headers, and spacing) without changing features or flows.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/common/PageHeader.tsx",
-          "frontend/src/pages/WalletPage.tsx",
-          "frontend/src/pages/TransactionsPage.tsx",
-          "frontend/src/pages/ProfilePage.tsx",
-          "frontend/src/pages/BuyCreditsPage.tsx",
-          "frontend/src/pages/WithdrawPage.tsx",
-          "frontend/src/pages/admin/AdminDashboardPage.tsx",
-          "frontend/src/pages/admin/AdminUsersPage.tsx",
-          "frontend/src/pages/admin/AdminWheelConfigPage.tsx",
-          "frontend/src/pages/admin/AdminManualPaymentRequestsPage.tsx",
-          "frontend/src/pages/admin/AdminWithdrawalsPage.tsx",
-          "frontend/src/index.css"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/common/PageHeader.tsx",
-          "frontend/src/pages/WalletPage.tsx",
-          "frontend/src/pages/TransactionsPage.tsx",
-          "frontend/src/pages/ProfilePage.tsx",
-          "frontend/src/pages/BuyCreditsPage.tsx",
-          "frontend/src/pages/WithdrawPage.tsx",
-          "frontend/src/pages/admin/AdminDashboardPage.tsx",
-          "frontend/src/index.css"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Fix the reported slow page load behavior across the app by reducing unnecessary refetching, avoiding full-page loading states when cached data exists, and minimizing expensive work during route transitions.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/GamePage.tsx",
-          "frontend/src/pages/WalletPage.tsx",
-          "frontend/src/pages/TransactionsPage.tsx",
-          "frontend/src/pages/ProfilePage.tsx",
-          "frontend/src/pages/BuyCreditsPage.tsx",
-          "frontend/src/components/auth/AdminRouteGuard.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/GamePage.tsx",
-          "frontend/src/pages/WalletPage.tsx",
-          "frontend/src/pages/TransactionsPage.tsx",
-          "frontend/src/pages/ProfilePage.tsx",
-          "frontend/src/pages/BuyCreditsPage.tsx",
-          "frontend/src/components/auth/AdminRouteGuard.tsx"
+          "frontend/src/components/game/SpinWheel.tsx"
         ]
       }
     ]
@@ -97,20 +39,8 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/auth/AdminRouteGuard.tsx",
-    "frontend/src/components/common/PageHeader.tsx",
-    "frontend/src/components/layout/AppLayout.tsx",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/index.css",
-    "frontend/src/pages/BuyCreditsPage.tsx",
+    "frontend/src/components/game/SpinWheel.tsx",
     "frontend/src/pages/GamePage.tsx",
-    "frontend/src/pages/ProfilePage.tsx",
-    "frontend/src/pages/TransactionsPage.tsx",
-    "frontend/src/pages/WalletPage.tsx",
-    "frontend/src/pages/WithdrawPage.tsx",
-    "frontend/src/pages/admin/AdminDashboardPage.tsx",
-    "frontend/src/pages/payments/PaymentSuccessPage.tsx",
-    "frontend/tailwind.config.js",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
