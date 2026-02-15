@@ -1,46 +1,102 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T21:27:24.523Z",
+  "generatedAt": "2026-02-15T22:20:07.846Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 6,
+    "implemented": 5,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Ensure the spinner is clearly visible when the user taps the Spin button (during `isSpinning` / `showEffects` states), including when the button is disabled. The spinner and the \"Spinning...\" label must not be faded out by disabled styling in dark mode.",
+        "summary": "Replace the current wheel rendering in `frontend/src/components/game/SpinWheel.tsx` so the wheel is a true circular element (not a rotated image) divided into exactly 4 clearly labeled sections: Tiger, Dragon, Miss, Crit. Use an SVG/CSS-based wheel (or a circle PNG if already present), and ensure the wheel is visibly rendered at all times (idle and spinning).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/GamePage.tsx"
+          "frontend/src/components/game/SpinWheel.tsx",
+          "frontend/src/index.css"
         ],
         "matchedFiles": [
-          "frontend/src/pages/GamePage.tsx"
+          "frontend/src/components/game/SpinWheel.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Standardize wheel loading feedback so users always see an obvious loading indicator while the wheel image is loading (or slow to load), and it remains visible until the wheel image is actually rendered.",
+        "summary": "Implement/ensure a fixed pointer at the top-center of the wheel area that indicates the selected segment when the wheel stops. The pointer must remain fixed while the wheel rotates beneath it.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/game/SpinWheel.tsx"
+          "frontend/src/components/game/SpinWheel.tsx",
+          "frontend/src/index.css"
         ],
         "matchedFiles": [
           "frontend/src/components/game/SpinWheel.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Add a smooth spin interaction flow on `frontend/src/pages/GamePage.tsx`: when the user clicks Spin, deduct 50 credits per spin via the backend spin call, animate the wheel smoothly, stop on the backend-provided outcome, then show an outcome result popup/notification with green styling for wins (Tiger/Dragon), neutral styling for Miss, and red styling for Crit.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/GamePage.tsx",
+          "frontend/src/components/game/SpinWheel.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/GamePage.tsx",
+          "frontend/src/components/game/SpinWheel.tsx"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Ensure the balance displayed to the user updates to reflect the backend outcome and payout rules: Spin cost is 50 credits each time; Dragon pays 1.96×50, Tiger pays 1.4×50, Miss pays 0 (no payout beyond the spin cost), and Crit deducts an additional 25 credits (i.e., extra loss on top of the 50 spin cost).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/GamePage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/GamePage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Update backend `spinWheel()` in `backend/main.mo` so outcomes are not hard-coded to a fixed value and instead vary per spin according to the configured probabilities, while continuing to return `outcome`, `profit`, and `balanceAfterSpin` consistent with the payout rules (including Crit additional -25 credits beyond the 50 credit spin cost).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-6",
+        "summary": "Ensure outcome-specific visual effects are shown after the wheel stops: rewarding effect for Tiger/Dragon, neutral effect for Miss, and loss animation for Crit, and ensure these effects do not appear before the wheel has finished spinning.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/GamePage.tsx",
+          "frontend/src/components/game/OutcomeEffects.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/GamePage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
     "frontend/src/components/game/SpinWheel.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/BuyCreditsPage.tsx",
     "frontend/src/pages/GamePage.tsx",
+    "frontend/src/pages/admin/AdminWheelConfigPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

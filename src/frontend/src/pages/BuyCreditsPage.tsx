@@ -1,274 +1,220 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { useGetCallerUserProfile, useGetCreditPackages, useGetManualPaymentConfig, useCreateManualPaymentRequest, useGetMyManualPaymentRequests } from '../hooks/useQueries';
+import { useGetCreditPackages, useGetManualPaymentConfig, useCreateManualPaymentRequest, useGetMyManualPaymentRequests } from '../hooks/useQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Sparkles, CreditCard, AlertCircle, CheckCircle2, Clock, XCircle, QrCode } from 'lucide-react';
+import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import PageHeader from '../components/common/PageHeader';
-import { Sparkles, Shield, Gift, QrCode, Clock, CheckCircle2, XCircle, Zap } from 'lucide-react';
-import { toast } from 'sonner';
-import { formatINR } from '../utils/currency';
-import { computeCreditsFromINR, arePackagesAvailable } from '../utils/creditPricing';
 import { ManualPaymentRequestStatus } from '../backend';
-import PremiumSpinner from '../components/common/PremiumSpinner';
-import { assetUrl } from '../utils/assetUrl';
-
-const QUICK_OFFERS = [
-  { label: '₹100', amount: 100 },
-  { label: '₹200', amount: 200 },
-  { label: '₹1000', amount: 1000 },
-];
 
 export default function BuyCreditsPage() {
   const navigate = useNavigate();
-  const { data: profile } = useGetCallerUserProfile();
   const { data: packages, isLoading: packagesLoading } = useGetCreditPackages();
   const { data: paymentConfig, isLoading: configLoading } = useGetManualPaymentConfig();
-  const { data: myRequests, refetch: refetchRequests } = useGetMyManualPaymentRequests();
+  const { data: myRequests } = useGetMyManualPaymentRequests();
   const createRequest = useCreateManualPaymentRequest();
-  
-  const [selectedPackage, setSelectedPackage] = useState<{ name: string; credits: bigint; priceInrMultiplier: bigint } | null>(null);
   const [customAmount, setCustomAmount] = useState('');
-  const [customSelection, setCustomSelection] = useState<{ inr: number; credits: bigint } | null>(null);
   const [showQRDialog, setShowQRDialog] = useState(false);
 
-  const packagesAvailable = arePackagesAvailable(packages);
-
-  const handleSelectPackage = (pkg: { name: string; credits: bigint; priceInrMultiplier: bigint }) => {
+  const handleQuickBuy = async (credits: number) => {
     if (!paymentConfig) {
-      toast.error('Payment system is temporarily unavailable. Please try again later.');
-      return;
-    }
-    setSelectedPackage(pkg);
-    setCustomSelection(null);
-    setShowQRDialog(true);
-  };
-
-  const handleQuickOffer = (inrAmount: number) => {
-    if (!paymentConfig) {
-      toast.error('Payment system is temporarily unavailable. Please try again later.');
-      return;
-    }
-    if (!packagesAvailable) {
-      toast.error('Unable to calculate credits. Please try again later.');
+      toast.error('Payment system not configured. Please contact support.');
       return;
     }
 
-    const credits = computeCreditsFromINR(inrAmount, packages!);
-    setCustomSelection({ inr: inrAmount, credits });
-    setSelectedPackage(null);
-    setShowQRDialog(true);
-  };
-
-  const handleCustomAmount = () => {
-    const inrAmount = parseInt(customAmount);
-    if (isNaN(inrAmount) || inrAmount <= 0) {
-      toast.error('Please enter a valid amount');
-      return;
-    }
-    if (!paymentConfig) {
-      toast.error('Payment system is temporarily unavailable. Please try again later.');
-      return;
-    }
-    if (!packagesAvailable) {
-      toast.error('Unable to calculate credits. Please try again later.');
-      return;
-    }
-
-    const credits = computeCreditsFromINR(inrAmount, packages!);
-    setCustomSelection({ inr: inrAmount, credits });
-    setSelectedPackage(null);
-    setShowQRDialog(true);
-  };
-
-  const handleConfirmPayment = async () => {
     try {
-      const creditsToAdd = selectedPackage ? Number(selectedPackage.credits) : Number(customSelection!.credits);
-      const requestId = await createRequest.mutateAsync(BigInt(creditsToAdd));
-      toast.success('Payment request submitted!', {
-        description: `Request ID: ${requestId}. Awaiting admin approval.`
+      const requestId = await createRequest.mutateAsync(BigInt(credits));
+      toast.success('Payment request created! Please complete the payment.', {
+        description: `Request ID: ${requestId.toString()}`
       });
-      setShowQRDialog(false);
-      refetchRequests();
-      navigate({ to: '/payment-success' });
+      setShowQRDialog(true);
+      navigate({ to: '/payment-success', search: { requestId: requestId.toString() } });
     } catch (error: any) {
       toast.error(error.message || 'Failed to create payment request');
     }
   };
 
-  const getStatusBadge = (status: ManualPaymentRequestStatus) => {
-    if (status === ManualPaymentRequestStatus.pending) {
-      return <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" />Pending</Badge>;
+  const handleCustomBuy = async () => {
+    const creditsToAdd = parseInt(customAmount);
+    if (isNaN(creditsToAdd) || creditsToAdd <= 0) {
+      toast.error('Please enter a valid amount');
+      return;
     }
-    if (status === ManualPaymentRequestStatus.approved) {
-      return <Badge variant="default" className="gap-1 bg-chart-4 text-white"><CheckCircle2 className="h-3 w-3" />Approved</Badge>;
+
+    if (!paymentConfig) {
+      toast.error('Payment system not configured. Please contact support.');
+      return;
     }
-    return <Badge variant="destructive" className="gap-1"><XCircle className="h-3 w-3" />Declined</Badge>;
+
+    try {
+      const requestId = await createRequest.mutateAsync(BigInt(creditsToAdd));
+      toast.success('Payment request created! Please complete the payment.', {
+        description: `Request ID: ${requestId.toString()}`
+      });
+      setCustomAmount('');
+      setShowQRDialog(true);
+      navigate({ to: '/payment-success', search: { requestId: requestId.toString() } });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create payment request');
+    }
   };
 
-  // Resolve QR image URL: if it's a data URL, use directly; otherwise resolve as asset path
-  const getQRImageUrl = (qrImageReference: string): string => {
+  const getStatusIcon = (status: ManualPaymentRequestStatus) => {
+    if (status === ManualPaymentRequestStatus.pending) return <Clock className="h-4 w-4 text-warning" />;
+    if (status === ManualPaymentRequestStatus.approved) return <CheckCircle2 className="h-4 w-4 text-success" />;
+    return <XCircle className="h-4 w-4 text-destructive" />;
+  };
+
+  const getStatusBadge = (status: ManualPaymentRequestStatus) => {
+    if (status === ManualPaymentRequestStatus.pending) return <Badge variant="outline" className="border-warning text-warning">Pending</Badge>;
+    if (status === ManualPaymentRequestStatus.approved) return <Badge variant="outline" className="border-success text-success">Approved</Badge>;
+    return <Badge variant="destructive">Declined</Badge>;
+  };
+
+  const resolveQRImageUrl = (qrImageReference: string): string => {
+    // If it's already a data URL, return as-is
     if (qrImageReference.startsWith('data:')) {
       return qrImageReference;
     }
-    // Legacy: treat as asset path
-    return assetUrl(qrImageReference);
+    // Otherwise, treat it as a public asset path
+    return `/assets/generated/${qrImageReference}`;
   };
 
+  if (packagesLoading || configLoading) {
+    return (
+      <div className="container max-w-6xl mx-auto px-4 py-8 space-y-8">
+        <Skeleton className="h-32 w-full" />
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!paymentConfig) {
+    return (
+      <div className="container max-w-6xl mx-auto px-4 py-8">
+        <PageHeader
+          title="Buy Credits"
+          description="Add credits to your account"
+        />
+        <Alert variant="destructive" className="mt-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Payment system is not configured yet. Please contact the administrator.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
+    <div className="container max-w-6xl mx-auto px-4 py-8 space-y-8">
       <PageHeader
         title="Buy Credits"
         description="Choose a package or enter a custom amount"
-        badge={
-          <Badge variant="outline" className="gap-1.5 bg-primary/10 text-primary border-primary/30">
-            <Shield className="h-3 w-3" />
-            Secure Payment
-          </Badge>
-        }
       />
 
-      {/* Quick Offers */}
-      <Card className="premium-card border-primary/20 animate-fade-in" style={{ animationDelay: '50ms' }}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-            <Zap className="h-5 w-5 text-primary" />
-            Quick Offers
-          </CardTitle>
-          <CardDescription className="text-xs md:text-sm">Fast deposit options</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-3">
-            {QUICK_OFFERS.map((offer) => (
-              <Button
-                key={offer.amount}
-                onClick={() => handleQuickOffer(offer.amount)}
-                variant="outline"
-                size="lg"
-                className="hover-lift touch-friendly h-16 text-base font-bold"
-                disabled={!paymentConfig || !packagesAvailable}
-              >
-                {offer.label}
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Quick Buy Packages */}
+      <div>
+        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-primary" />
+          Quick Buy Packages
+        </h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {packages?.map((pkg) => {
+            const credits = Number(pkg.credits);
+            const priceInr = Number(pkg.priceInrMultiplier);
+            return (
+              <Card key={pkg.name} className="premium-card hover-lift">
+                <CardHeader>
+                  <CardTitle className="text-lg">{pkg.name}</CardTitle>
+                  <CardDescription>
+                    <span className="text-2xl font-bold text-primary">{credits.toLocaleString()}</span>
+                    <span className="text-sm text-muted-foreground"> credits</span>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="text-center py-2">
+                    <p className="text-sm text-muted-foreground">Price</p>
+                    <p className="text-xl font-bold">₹{priceInr.toLocaleString()}</p>
+                  </div>
+                  <Button
+                    onClick={() => handleQuickBuy(credits)}
+                    disabled={createRequest.isPending}
+                    className="w-full"
+                  >
+                    Buy Now
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Custom Amount */}
-      <Card className="premium-card border-primary/20 animate-fade-in" style={{ animationDelay: '100ms' }}>
+      <Card className="premium-card">
         <CardHeader>
-          <CardTitle className="text-lg md:text-xl">Custom Amount</CardTitle>
-          <CardDescription className="text-xs md:text-sm">Enter any amount in INR</CardDescription>
+          <CardTitle>Custom Amount</CardTitle>
+          <CardDescription>Enter any amount of credits you want to purchase</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1">
-              <Label htmlFor="custom-amount" className="sr-only">Amount in INR</Label>
-              <Input
-                id="custom-amount"
-                type="number"
-                placeholder="Enter amount (₹)"
-                value={customAmount}
-                onChange={(e) => setCustomAmount(e.target.value)}
-                className="h-12 text-base"
-              />
-            </div>
-            <Button
-              onClick={handleCustomAmount}
-              size="lg"
-              className="hover-lift touch-friendly sm:w-auto"
-              disabled={!paymentConfig || !packagesAvailable}
-            >
-              Continue
-            </Button>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="customAmount">Credits Amount</Label>
+            <Input
+              id="customAmount"
+              type="number"
+              placeholder="Enter amount"
+              value={customAmount}
+              onChange={(e) => setCustomAmount(e.target.value)}
+              disabled={createRequest.isPending}
+            />
           </div>
+          <Button
+            onClick={handleCustomBuy}
+            disabled={createRequest.isPending || !customAmount}
+            className="w-full"
+          >
+            <CreditCard className="h-4 w-4 mr-2" />
+            Create Payment Request
+          </Button>
         </CardContent>
       </Card>
-
-      {/* Credit Packages */}
-      <div className="space-y-4">
-        <h2 className="text-xl md:text-2xl font-bold">Credit Packages</h2>
-        {packagesLoading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-48" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {packages?.map((pkg, index) => {
-              const priceINR = Number(pkg.priceInrMultiplier);
-              const credits = Number(pkg.credits);
-              const isPopular = pkg.name === 'Premium';
-
-              return (
-                <Card
-                  key={pkg.name}
-                  className={`premium-card relative overflow-hidden hover-lift cursor-pointer transition-all animate-fade-in ${
-                    isPopular ? 'border-primary shadow-premium-lg' : 'border-primary/20'
-                  }`}
-                  onClick={() => handleSelectPackage(pkg)}
-                  style={{ animationDelay: `${150 + index * 50}ms` }}
-                >
-                  {isPopular && (
-                    <div className="absolute top-0 right-0 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground px-3 py-1 text-xs font-bold rounded-bl-lg">
-                      <Sparkles className="h-3 w-3 inline mr-1" />
-                      POPULAR
-                    </div>
-                  )}
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">{pkg.name}</CardTitle>
-                    <CardDescription className="text-xs">Credit package</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p className="text-3xl font-bold text-primary">{credits.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground">Credits</p>
-                    </div>
-                    <div className="pt-3 border-t border-border">
-                      <p className="text-2xl font-bold">{formatINR(priceINR)}</p>
-                      <p className="text-xs text-muted-foreground">One-time payment</p>
-                    </div>
-                    <Button
-                      className="w-full hover-lift touch-friendly"
-                      variant={isPopular ? 'default' : 'outline'}
-                      disabled={!paymentConfig}
-                    >
-                      Select Package
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-      </div>
 
       {/* Recent Payment Requests */}
       {myRequests && myRequests.length > 0 && (
-        <Card className="premium-card border-primary/20 animate-fade-in">
+        <Card className="premium-card">
           <CardHeader>
-            <CardTitle className="text-lg md:text-xl">Recent Payment Requests</CardTitle>
-            <CardDescription className="text-xs md:text-sm">Track your payment submissions</CardDescription>
+            <CardTitle>Recent Payment Requests</CardTitle>
+            <CardDescription>Track your payment request status</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {myRequests.slice(-5).reverse().map((req) => (
+              {myRequests.slice(0, 5).map((request) => (
                 <div
-                  key={req.id.toString()}
-                  className="flex items-center justify-between p-3 rounded-lg bg-accent/50"
+                  key={Number(request.id)}
+                  className="flex items-center justify-between p-3 rounded-lg bg-accent/30 border border-border/50"
                 >
-                  <div>
-                    <p className="font-medium text-sm">Request #{req.id.toString()}</p>
-                    <p className="text-xs text-muted-foreground">{Number(req.amount).toLocaleString()} credits</p>
+                  <div className="flex items-center gap-3">
+                    {getStatusIcon(request.status)}
+                    <div>
+                      <p className="font-semibold">{Number(request.amount).toLocaleString()} credits</p>
+                      <p className="text-xs text-muted-foreground">
+                        Request #{request.id.toString()}
+                      </p>
+                    </div>
                   </div>
-                  {getStatusBadge(req.status)}
+                  {getStatusBadge(request.status)}
                 </div>
               ))}
             </div>
@@ -276,75 +222,35 @@ export default function BuyCreditsPage() {
         </Card>
       )}
 
-      {/* QR Payment Dialog */}
+      {/* QR Code Dialog */}
       <Dialog open={showQRDialog} onOpenChange={setShowQRDialog}>
-        <DialogContent className="premium-surface border-primary/30 shadow-2xl max-w-md">
+        <DialogContent className="sm:max-w-md premium-surface">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl">
+            <DialogTitle className="flex items-center gap-2">
               <QrCode className="h-5 w-5 text-primary" />
               Complete Payment
             </DialogTitle>
             <DialogDescription>
-              Scan the QR code and follow the instructions to complete your payment
+              Scan the QR code below to complete your payment
             </DialogDescription>
           </DialogHeader>
-
-          <div className="space-y-6 py-4">
-            {selectedPackage && (
-              <div className="text-center space-y-2">
-                <p className="text-sm text-muted-foreground">Package</p>
-                <p className="text-2xl font-bold">{selectedPackage.name}</p>
-                <p className="text-lg text-primary font-semibold">
-                  {Number(selectedPackage.credits).toLocaleString()} Credits
-                </p>
-                <p className="text-xl font-bold">{formatINR(Number(selectedPackage.priceInrMultiplier))}</p>
+          <div className="space-y-4">
+            {paymentConfig.qrImageReference && (
+              <div className="flex justify-center p-4 bg-white rounded-lg">
+                <img
+                  src={resolveQRImageUrl(paymentConfig.qrImageReference)}
+                  alt="Payment QR Code"
+                  className="w-64 h-64 object-contain"
+                />
               </div>
             )}
-
-            {customSelection && (
-              <div className="text-center space-y-2">
-                <p className="text-sm text-muted-foreground">Custom Amount</p>
-                <p className="text-lg text-primary font-semibold">
-                  {Number(customSelection.credits).toLocaleString()} Credits
-                </p>
-                <p className="text-xl font-bold">{formatINR(customSelection.inr)}</p>
-              </div>
-            )}
-
-            {paymentConfig && (
-              <>
-                <div className="flex justify-center">
-                  <img
-                    src={getQRImageUrl(paymentConfig.qrImageReference)}
-                    alt="Payment QR Code"
-                    className="w-64 h-64 object-contain rounded-lg border border-border"
-                  />
-                </div>
-
-                <Alert className="bg-primary/5 border-primary/20">
-                  <AlertDescription className="text-sm whitespace-pre-wrap">
-                    {paymentConfig.instructions}
-                  </AlertDescription>
-                </Alert>
-              </>
-            )}
-
-            <Button
-              onClick={handleConfirmPayment}
-              disabled={createRequest.isPending}
-              className="w-full h-12 text-base font-bold hover-lift"
-            >
-              {createRequest.isPending ? (
-                <>
-                  <PremiumSpinner size="sm" className="mr-2" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="mr-2 h-5 w-5" />
-                  I've Completed Payment
-                </>
-              )}
+            <Alert>
+              <AlertDescription className="text-sm whitespace-pre-wrap">
+                {paymentConfig.instructions}
+              </AlertDescription>
+            </Alert>
+            <Button onClick={() => setShowQRDialog(false)} className="w-full">
+              Close
             </Button>
           </div>
         </DialogContent>

@@ -1,32 +1,85 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
-  "known_issues": [
-    "Loading spinner/wheel is missing or not visible (user asked: \"where is the spinner\")."
+  "summary": "Implement a 4-section spinning wheel game (tiger/dragon/miss/crit) with a fixed pointer, smooth spin animation, per-spin credit cost, outcome effects, and balance updates.",
+  "architectural_notes": [
+    "Spin costs 50 credits up front; outcomes apply after stop: Dragon reward = 1.96 * 50, Tiger reward = 1.4 * 50, Miss = 0, Crit = deduct additional 25 credits (0.5 * 50).",
+    "Pointer is fixed at the top center; wheel rotates beneath it; the section under the pointer at stop determines the result.",
+    "After stop, show result UI with effects: rewarding effect for Tiger/Dragon, neutral for Miss, loss animation for Crit; result popup color reflects outcome (green/red)."
   ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-ensure-the-spinner-is-clearly-visible-when-the-user-taps-the-spin-button-during-isspinning-showeffects-states-including-when-the-button-is-disabled-the-spinner-and-the-spinning-label-must-not-be-faded-out-by-disabled-styling-in-dark-mode",
-      "title": "Ensure the spinner is clearly visible when the user taps the Spin button (during `isSpinning` / `showEffects` states), including when the button is disabled. The spinner and the \"Spinning...\" label must not be faded out by disabled styling in dark mode.",
+      "id": "feature-replace-the-current-wheel-rendering-in-frontend-src-components-game-spinwheel-tsx-so-the-wheel-is-a-true-circular-element-not-a-rotated-image-divided-into-exactly-4-clearly-labeled-sections-tiger-dragon-miss-crit-use-an-svg-css-based-wheel-or-a-circle-png-if-already-present-and-ensure-the-wheel-is-visibly-rendered-at-all-times-idle-and-spinning",
+      "title": "Replace the current wheel rendering in `frontend/src/components/game/SpinWheel.tsx` so the wheel is a true circular element (not a rotated image) divided into exactly 4 clearly labeled sections: Tiger, Dragon, Miss, Crit. Use an SVG/CSS-based wheel (or a circle PNG if already present), and ensure the wheel is visibly rendered at all times (idle and spinning).",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-standardize-wheel-loading-feedback-so-users-always-see-an-obvious-loading-indicator-while-the-wheel-image-is-loading-or-slow-to-load-and-it-remains-visible-until-the-wheel-image-is-actually-rendered",
-      "title": "Standardize wheel loading feedback so users always see an obvious loading indicator while the wheel image is loading (or slow to load), and it remains visible until the wheel image is actually rendered.",
+      "id": "feature-implement-ensure-a-fixed-pointer-at-the-top-center-of-the-wheel-area-that-indicates-the-selected-segment-when-the-wheel-stops-the-pointer-must-remain-fixed-while-the-wheel-rotates-beneath-it",
+      "title": "Implement/ensure a fixed pointer at the top-center of the wheel area that indicates the selected segment when the wheel stops. The pointer must remain fixed while the wheel rotates beneath it.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-a-smooth-spin-interaction-flow-on-frontend-src-pages-gamepage-tsx-when-the-user-clicks-spin-deduct-50-credits-per-spin-via-the-backend-spin-call-animate-the-wheel-smoothly-stop-on-the-backend-provided-outcome-then-show-an-outcome-result-popup-notification-with-green-styling-for-wins-tiger-dragon-neutral-styling-for-miss-and-red-styling-for-crit",
+      "title": "Add a smooth spin interaction flow on `frontend/src/pages/GamePage.tsx`: when the user clicks Spin, deduct 50 credits per spin via the backend spin call, animate the wheel smoothly, stop on the backend-provided outcome, then show an outcome result popup/notification with green styling for wins (Tiger/Dragon), neutral styling for Miss, and red styling for Crit.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-balance-displayed-to-the-user-updates-to-reflect-the-backend-outcome-and-payout-rules-spin-cost-is-50-credits-each-time-dragon-pays-1-96-50-tiger-pays-1-4-50-miss-pays-0-no-payout-beyond-the-spin-cost-and-crit-deducts-an-additional-25-credits-i-e-extra-loss-on-top-of-the-50-spin-cost",
+      "title": "Ensure the balance displayed to the user updates to reflect the backend outcome and payout rules: Spin cost is 50 credits each time; Dragon pays 1.96×50, Tiger pays 1.4×50, Miss pays 0 (no payout beyond the spin cost), and Crit deducts an additional 25 credits (i.e., extra loss on top of the 50 spin cost).",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-outcome-specific-visual-effects-are-shown-after-the-wheel-stops-rewarding-effect-for-tiger-dragon-neutral-effect-for-miss-and-loss-animation-for-crit-and-ensure-these-effects-do-not-appear-before-the-wheel-has-finished-spinning",
+      "title": "Ensure outcome-specific visual effects are shown after the wheel stops: rewarding effect for Tiger/Dragon, neutral effect for Miss, and loss animation for Crit, and ensure these effects do not appear before the wheel has finished spinning.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
     }
   ],
-  "new_feature_requests": [],
-  "projectName": "Make the spinning/loading spinner visible during wheel spins",
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Replace spinner image with a circle-based wheel (or circle PNG) divided into 4 sections: tiger, dragon, miss, crit",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Add fixed top-center pointer that indicates the wheel result when spinning stops",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Implement spin interaction: deduct 50 credits per spin, smooth wheel spin animation, stop on a result, show outcome popup/effects, and update balance based on outcome (Dragon: +1.96x50, Tiger: +1.4x50, Miss: +0, Crit: -25 additional)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Update backend `spinWheel()` in `backend/main.mo` so outcomes are not hard-coded to a fixed value and instead vary per spin according to the configured probabilities, while continuing to return `outcome`, `profit`, and `balanceAfterSpin` consistent with the payout rules (including Crit additional -25 credits beyond the 50 credit spin cost).",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Implement 4-section Tiger/Dragon/Miss/Crit spin wheel with non-image wheel rendering, pointer, correct payouts, and outcome feedback",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

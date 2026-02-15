@@ -1,32 +1,57 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-15T21:27:24.520Z",
-  "summary": "REQ-1 and REQ-2 appear to be implemented: GamePage updates ensure the in-button spinner/\"Spinning...\" text stay visible even when the Spin button is disabled, and SpinWheel now shows a consistent PremiumSpinner-based loading indicator until the wheel image is loaded, with timeout/error fallback UI. The diff also introduces additional diagnostics/logging and broader page redesign changes that were not requested.",
+  "generatedAt": "2026-02-15T22:20:07.843Z",
+  "summary": "Most frontend wheel/game-flow requirements appear implemented (SVG circular 4-section wheel with fixed pointer; smooth spin animation landing on backend outcome; balance cache update from backend result; outcome toasts/effects gating). Backend spinWheel changes cannot be verified from the provided truncated backend diff. Several unrelated admin/payment/UI enhancements were added beyond the BuildRequest.",
   "missing_requirements": [],
   "hallucinated_features": [
     {
-      "description": "In-app diagnostics panel and extra diagnostic state (fetchStatus/showDiagnostics), including HEAD fetch checks and detailed console logging for wheel image failures/timeouts.",
-      "reason": "BuildRequest REQ-2 asks for a visible loading indicator and a clear fallback state, but does not request an interactive diagnostics panel, network HEAD checks, or structured debug logging.",
+      "description": "Added state migration module and applied migration logic to backend actor, including introducing `lastSpinResult` into user profile state.",
+      "reason": "BuildRequest did not ask for migrations or schema evolution; only requested updating `spinWheel()` behavior and payouts.",
       "evidence": [
-        "frontend/src/components/game/SpinWheel.tsx",
-        "frontend-file-summaries.txt (SpinWheel description mentions diagnostics panel, fetch check, structured console logging)"
+        "backend/migration.mo",
+        "backend/main.mo"
       ]
     },
     {
-      "description": "Broader GamePage redesign (hero section, payout cards, layout/visual changes) beyond spinner visibility behavior.",
-      "reason": "BuildRequest is narrowly scoped to spinner visibility during spins and wheel image loading feedback; it does not request a page redesign.",
+      "description": "Admin Wheel Configuration page for managing house edge settings.",
+      "reason": "No requirement requested creating/admin UI for house edge configuration.",
       "evidence": [
-        "frontend/src/pages/GamePage.tsx",
-        "frontend-file-summaries.txt (GamePage described as \"Redesigned game page\")"
+        "frontend/src/pages/admin/AdminWheelConfigPage.tsx"
+      ]
+    },
+    {
+      "description": "Manual payment/Buy Credits UI enhancements including QR dialog/image resolution and expanded payment request tracking UI.",
+      "reason": "BuildRequest is about the spin wheel game behavior; it explicitly lists withdrawals as a non-goal and does not request buy-credits/payment UI changes.",
+      "evidence": [
+        "frontend/src/pages/BuyCreditsPage.tsx"
+      ]
+    },
+    {
+      "description": "React Query policy changes (staleTime/refetch behavior) and additional cache update behavior for profile data beyond the spin/balance requirement.",
+      "reason": "Not requested; only needed spin flow and balance updates.",
+      "evidence": [
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "description": "Added/updated animated balance display component (BalanceTicker) and multiple premium UI redesign changes across non-game pages (Wallet/Transactions/Profile/etc).",
+      "reason": "Not requested as part of the wheel implementation requirements.",
+      "evidence": [
+        "frontend-file-summaries.txt"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.62,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
     "frontend/src/components/game/SpinWheel.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/BuyCreditsPage.tsx",
     "frontend/src/pages/GamePage.tsx",
+    "frontend/src/pages/admin/AdminWheelConfigPage.tsx",
     "project_state.json"
   ]
 }

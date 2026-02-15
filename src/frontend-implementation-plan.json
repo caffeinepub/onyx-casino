@@ -1,37 +1,113 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Make spin and wheel loading spinners clearly visible",
+  "title": "4-section SVG spin wheel with fixed pointer, smooth stop-on-outcome animation, outcome feedback, and balance sync",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Keep the in-button spinner and “Spinning...” label clearly visible during spins even while the Spin button is disabled (no disabled fade-out in dark mode).",
+      "summary": "Replace SpinWheel rendering with a true circular SVG/CSS wheel split into 4 labeled segments (Tiger/Dragon/Miss/Crit) that remains visible idle and during spins.",
       "acceptanceCriteria": [
-        "On GamePage, when a spin is in progress, the Spin button shows a clearly visible animated spinner and the text \"Spinning...\".",
-        "The spinner remains clearly visible even though the button is disabled to prevent double-clicking (i.e., disabled-state opacity does not make the spinner effectively invisible).",
-        "The spinner and text have sufficient contrast against the button background in the default dark theme."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/GamePage.tsx",
-          "operation": "modify",
-          "description": "Update the Spin button styling so disabled state does not reduce opacity for the loading content (e.g., override disabled opacity and ensure high-contrast text). Ensure the in-button loading UI (PremiumSpinner + “Spinning...”) remains visually prominent during `isSpinning`/`showEffects` while still preventing double clicks. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Standardize wheel image loading feedback with an obvious loading indicator that persists until the wheel image renders, plus a clear fallback on error/timeout.",
-      "acceptanceCriteria": [
-        "When the wheel image has not loaded yet, the wheel area displays a clearly visible loading indicator (spinner + short label).",
-        "Once the wheel image loads successfully, the loading indicator disappears and the wheel is shown.",
-        "If the wheel image errors/timeouts, the UI shows a clear fallback state (not a blank area)."
+        "On the Game page, the wheel appears as a circle (not a diamond/rotated square image).",
+        "The wheel has exactly 4 segments and each segment is visibly labeled: Tiger, Dragon, Miss, Crit.",
+        "The wheel is visible both before and during a spin (no blank/transparent state)."
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/game/SpinWheel.tsx",
           "operation": "modify",
-          "description": "Refine the wheel loading states so an obvious loading indicator (spinner + label) is always shown while the image is still not rendered, and only replaced by a dedicated fallback UI when the image truly errors (or a timeout state explicitly communicates delayed loading without going blank). Standardize the indicator by using the PremiumSpinner component for consistency and adjust label contrast for the dark theme. Verify the component's usage instructions before implementing."
+          "description": "Remove image-based wheel rendering/diagnostics and implement a circular SVG wheel with exactly 4 equal segments and visible text labels (Tiger/Dragon/Miss/Crit). Keep wheel content always rendered (idle/spinning) and rotate the wheel element (not the entire container)."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add/adjust CSS utility classes for the new SVG wheel (e.g., label typography/contrast, segment divider styling) to ensure labels remain legible in both idle and spinning states."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Ensure a fixed top-center pointer overlays the wheel and indicates the selected segment when the wheel stops.",
+      "acceptanceCriteria": [
+        "A pointer is always visible above the wheel at top-center.",
+        "During spin animation, the pointer does not move; only the wheel rotates.",
+        "When the wheel stops, the pointer aligns to the final outcome segment."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/game/SpinWheel.tsx",
+          "operation": "modify",
+          "description": "Keep/render the pointer as a non-rotating overlay anchored top-center of the wheel container, and align the wheel’s outcome-to-rotation mapping so the pointer indicates the center of the final outcome segment at rest."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Refine pointer positioning/z-index and optional subtle animation (pulse) so it stays visibly fixed above the rotating wheel without layout shifting."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Implement smooth spin flow on GamePage: block spins under 50 credits, animate smoothly, stop on backend outcome, disable double-spins, and show outcome-styled result notification after stop.",
+      "acceptanceCriteria": [
+        "Clicking Spin triggers a visible smooth wheel rotation and then a stop (no instant jump).",
+        "Spin button is disabled while spinning to prevent double-spins.",
+        "After the wheel stops, the UI shows a clear result popup/notification with: win=green (Tiger/Dragon), miss=neutral, crit=red.",
+        "If the user has < 50 credits, spinning is blocked and an English error message is shown."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/GamePage.tsx",
+          "operation": "modify",
+          "description": "Adjust the spin interaction so the backend spin call triggers the wheel rotation, the Spin button remains disabled while spinning/effects run, and the result toast/notification is shown only after the wheel stop callback fires. Style notifications by outcome (Tiger/Dragon green, Miss neutral, Crit red) and keep the <50 credits guard with English messaging."
+        },
+        {
+          "path": "frontend/src/components/game/SpinWheel.tsx",
+          "operation": "modify",
+          "description": "Ensure the wheel animation is smooth and deterministic (lands on backend-provided outcome) and reliably calls onSpinComplete only when the wheel has finished rotating."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Ensure the displayed balance updates to match backend-provided balanceAfterSpin and reflects the specified payout rules via backend results.",
+      "acceptanceCriteria": [
+        "After each completed spin, the user’s displayed balance matches `balanceAfterSpin` returned by the backend.",
+        "Dragon outcome results in net +48 credits vs pre-spin balance (win 98 minus 50 cost).",
+        "Tiger outcome results in net +20 credits vs pre-spin balance (win 70 minus 50 cost).",
+        "Miss outcome results in net -50 credits vs pre-spin balance (50 cost, no payout).",
+        "Crit outcome results in net -75 credits vs pre-spin balance (50 cost + additional 25 loss)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Update the spin mutation success handling to immediately sync the React Query cache for ['currentUserProfile'] with the returned SpinResult (at minimum: credits/balanceAfterSpin and lastSpinResult), so the displayed balance updates promptly and matches backend values."
+        },
+        {
+          "path": "frontend/src/pages/GamePage.tsx",
+          "operation": "modify",
+          "description": "Use backend-provided SpinResult values for user-facing result messaging (profit/balanceAfterSpin) and avoid any frontend-side payout calculations that could drift from backend rules."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Show outcome-specific visual effects only after the wheel stops: win effect for Tiger/Dragon, neutral for Miss, loss for Crit; allow spinning again after effects complete.",
+      "acceptanceCriteria": [
+        "Effects are triggered only after `onSpinComplete` fires (wheel stopped).",
+        "Tiger/Dragon display a win/reward effect; Miss displays a neutral effect; Crit displays a loss effect.",
+        "After the effect completes, the user can spin again."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/GamePage.tsx",
+          "operation": "modify",
+          "description": "Ensure OutcomeEffects are triggered only from the wheel’s stop callback (not immediately after the backend call) and that the app re-enables spinning only after onEffectComplete fires."
+        },
+        {
+          "path": "frontend/src/components/game/OutcomeEffects.tsx",
+          "operation": "modify",
+          "description": "Confirm effects/durations map to Tiger/Dragon (reward), Miss (neutral), Crit (loss) and remain purely post-stop overlays; adjust timing or layering if needed to prevent appearing before the wheel finishes."
         }
       ]
     }

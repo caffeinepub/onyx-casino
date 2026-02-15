@@ -1,30 +1,39 @@
-import { useState } from 'react';
-import { useGetHouseEdge, useSetHouseEdge } from '../../hooks/useQueries';
+import { useState, useEffect } from 'react';
+import { useGetHouseEdgeValue, useSetHouseEdgeValue } from '../../hooks/useQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Settings } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import PageHeader from '../../components/common/PageHeader';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminWheelConfigPage() {
-  const { data: currentEdge, isLoading } = useGetHouseEdge();
-  const setEdge = useSetHouseEdge();
-  const [edgeValue, setEdgeValue] = useState('');
+  const { data: currentHouseEdge, isLoading } = useGetHouseEdgeValue();
+  const setHouseEdge = useSetHouseEdgeValue();
+  const [houseEdgeInput, setHouseEdgeInput] = useState('');
+
+  useEffect(() => {
+    if (currentHouseEdge !== undefined) {
+      setHouseEdgeInput((Number(currentHouseEdge) / 100).toFixed(2));
+    }
+  }, [currentHouseEdge]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const value = parseInt(edgeValue);
-    if (isNaN(value) || value < 0 || value > 10000) {
-      toast.error('Please enter a valid house edge (0-10000)');
+    const value = parseFloat(houseEdgeInput);
+    if (isNaN(value) || value < 0 || value > 100) {
+      toast.error('Please enter a valid house edge between 0 and 100');
       return;
     }
 
     try {
-      await setEdge.mutateAsync(BigInt(value));
+      await setHouseEdge.mutateAsync(BigInt(Math.round(value * 100)));
       toast.success('House edge updated successfully');
-      setEdgeValue('');
     } catch (error: any) {
       toast.error(error.message || 'Failed to update house edge');
     }
@@ -32,85 +41,101 @@ export default function AdminWheelConfigPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading configuration...</p>
-        </div>
+      <div className="container max-w-4xl mx-auto px-4 py-8 space-y-6">
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
 
-  const currentEdgePercent = currentEdge ? Number(currentEdge) / 100 : 0;
-
   return (
-    <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
-      <div className="animate-fade-in">
-        <h1 className="text-3xl font-bold mb-2">Wheel Configuration</h1>
-        <p className="text-muted-foreground">Adjust house edge and game settings</p>
-      </div>
+    <div className="container max-w-4xl mx-auto px-4 py-8 space-y-6">
+      <PageHeader
+        title="Wheel Configuration"
+        description="Manage game settings and house edge"
+        badge={<Badge variant="outline" className="border-primary/50 text-primary">Admin</Badge>}
+      />
 
-      <Card className="border-primary/20 animate-fade-in" style={{ animationDelay: '100ms' }}>
+      <Alert className="border-primary/20 bg-primary/5">
+        <CheckCircle2 className="h-4 w-4 text-primary" />
+        <AlertDescription>
+          Current house edge: <strong>{currentHouseEdge ? (Number(currentHouseEdge) / 100).toFixed(2) : '0.00'}%</strong>
+        </AlertDescription>
+      </Alert>
+
+      <Card className="premium-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5 text-primary" />
-            House Edge
-          </CardTitle>
+          <CardTitle>House Edge Settings</CardTitle>
           <CardDescription>
-            Current: {currentEdgePercent}% (basis points: {currentEdge?.toString()})
+            Adjust the house edge percentage (0-100%). This affects the overall probability distribution.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="houseEdge">House Edge (basis points, 1000 = 10%)</Label>
+              <Label htmlFor="houseEdge">House Edge (%)</Label>
               <Input
                 id="houseEdge"
                 type="number"
-                placeholder="1000"
-                value={edgeValue}
-                onChange={(e) => setEdgeValue(e.target.value)}
-                disabled={setEdge.isPending}
+                step="0.01"
                 min="0"
-                max="10000"
+                max="100"
+                placeholder="8.00"
+                value={houseEdgeInput}
+                onChange={(e) => setHouseEdgeInput(e.target.value)}
+                disabled={setHouseEdge.isPending}
               />
               <p className="text-sm text-muted-foreground">
-                Enter value in basis points (100 = 1%, 1000 = 10%)
+                Enter a value between 0 and 100. For example, 8.00 means 8% house edge.
               </p>
             </div>
 
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                <strong>Note:</strong> Changing the house edge will affect future spins. 
+                Higher values favor the house, lower values favor players.
+              </AlertDescription>
+            </Alert>
+
             <Button
               type="submit"
-              disabled={setEdge.isPending}
-              className="w-full touch-friendly"
+              disabled={setHouseEdge.isPending}
+              className="w-full sm:w-auto"
             >
-              {setEdge.isPending ? 'Updating...' : 'Update House Edge'}
+              {setHouseEdge.isPending ? 'Updating...' : 'Update House Edge'}
             </Button>
           </form>
         </CardContent>
       </Card>
 
-      <Card className="border-primary/20 animate-fade-in" style={{ animationDelay: '200ms' }}>
+      <Card className="premium-card">
         <CardHeader>
-          <CardTitle>Current Probabilities</CardTitle>
-          <CardDescription>Wheel segment distribution</CardDescription>
+          <CardTitle>Payout Information</CardTitle>
+          <CardDescription>Current payout multipliers for each outcome</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex justify-between p-3 rounded-lg bg-accent/50">
-            <span className="font-medium">Tiger (1.4x)</span>
-            <span className="text-primary">35%</span>
-          </div>
-          <div className="flex justify-between p-3 rounded-lg bg-accent/50">
-            <span className="font-medium">Dragon (1.96x)</span>
-            <span className="text-primary">14%</span>
-          </div>
-          <div className="flex justify-between p-3 rounded-lg bg-accent/50">
-            <span className="font-medium">Miss (0x)</span>
-            <span className="text-primary">30.8%</span>
-          </div>
-          <div className="flex justify-between p-3 rounded-lg bg-accent/50">
-            <span className="font-medium">Crit (0.5x)</span>
-            <span className="text-primary">20.3%</span>
+        <CardContent>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="p-4 rounded-lg bg-primary/10 border border-primary/30">
+              <p className="text-sm text-muted-foreground">Tiger</p>
+              <p className="text-2xl font-bold text-primary">1.4x</p>
+              <p className="text-xs text-muted-foreground mt-1">Net: +20 credits (on 50 bet)</p>
+            </div>
+            <div className="p-4 rounded-lg bg-primary/10 border border-primary/30">
+              <p className="text-sm text-muted-foreground">Dragon</p>
+              <p className="text-2xl font-bold text-primary">1.96x</p>
+              <p className="text-xs text-muted-foreground mt-1">Net: +48 credits (on 50 bet)</p>
+            </div>
+            <div className="p-4 rounded-lg bg-muted/30 border border-border">
+              <p className="text-sm text-muted-foreground">Miss</p>
+              <p className="text-2xl font-bold text-muted-foreground">0x</p>
+              <p className="text-xs text-muted-foreground mt-1">Net: -50 credits (on 50 bet)</p>
+            </div>
+            <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/30">
+              <p className="text-sm text-muted-foreground">Crit</p>
+              <p className="text-2xl font-bold text-destructive">-0.5x</p>
+              <p className="text-xs text-muted-foreground mt-1">Net: -75 credits (on 50 bet)</p>
+            </div>
           </div>
         </CardContent>
       </Card>

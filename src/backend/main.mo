@@ -11,9 +11,11 @@ import OutCall "http-outcalls/outcall";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Iter "mo:core/Iter";
+import Migration "migration";
+import Blob "mo:core/Blob";
 
-
-
+// Apply migration logic
+(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -98,6 +100,7 @@ actor {
     bonusCouponAvailed : Bool;
     profileSetupCompleted : Bool;
     bonusGranted : Bool;
+    lastSpinResult : ?SpinResult;
   };
 
   public type SpinResult = {
@@ -156,8 +159,10 @@ actor {
   };
 
   public shared ({ caller }) func completeInitialProfileSetup(registrationData : RegistrationData) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can complete profile setup");
+    // Allow any authenticated principal (including guests) to register
+    // This is the entry point for new users, so we don't require #user role yet
+    if (caller.isAnonymous()) {
+      Runtime.trap("Anonymous principals cannot register");
     };
 
     if (users.containsKey(caller)) {
@@ -190,6 +195,7 @@ actor {
       bonusCouponAvailed = false;
       profileSetupCompleted = true;
       bonusGranted = true;
+      lastSpinResult = null;
     };
 
     users.add(caller, newProfile);
@@ -239,6 +245,7 @@ actor {
       balanceUpdates = existingProfile.balanceUpdates;
       profileSetupCompleted = existingProfile.profileSetupCompleted;
       bonusGranted = existingProfile.bonusGranted;
+      lastSpinResult = existingProfile.lastSpinResult;
     };
 
     users.add(caller, updatedProfile);
@@ -401,6 +408,20 @@ actor {
     } else { [] };
   };
 
+  func getRandomNat(max : Nat) : Nat {
+    let timeSeed = Time.now();
+    let iterations = Int.abs(timeSeed % 5);
+    var value = Int.abs(timeSeed % max);
+
+    var i = 0;
+    while (i < iterations) {
+      value := Int.abs(((value * 48271) + 12345) % max);
+      i += 1;
+    };
+
+    value.toNat();
+  };
+
   func determineWheelOutcome(spinResult : Nat, _flags : [Text]) : GameOutcome {
     if (spinResult <= currentSettings.probabilities.tiger) {
       #tiger;
@@ -420,7 +441,9 @@ actor {
 
     if (profile.credits < baseBet) { Runtime.trap("Insufficient funds, bet failed") };
 
-    let spinResult = 7727;
+    let rangeSize = currentSettings.probabilities.tiger + currentSettings.probabilities.dragon + currentSettings.probabilities.miss + currentSettings.probabilities.crit;
+    let spinResult = getRandomNat(rangeSize);
+
     let outcome = determineWheelOutcome(spinResult, []);
     var profit : Int = -Int.abs(baseBet);
 
@@ -431,8 +454,12 @@ actor {
       case (#dragon) {
         profit := baseBet * 196 / 100 - baseBet;
       };
-      case (#crit) { profit := -Int.abs((baseBet / 2) + baseBet) };
-      case (#miss) { profit := -Int.abs(baseBet) };
+      case (#crit) {
+        profit := -Int.abs((baseBet / 2) + baseBet);
+      };
+      case (#miss) {
+        profit := -Int.abs(baseBet);
+      };
     };
 
     if (profit < 0 and profile.credits < -profit) {
@@ -443,18 +470,21 @@ actor {
       profile.credits - (-profit).toNat();
     } else { profile.credits + profit.toNat() };
 
-    let updatedProfile = {
-      profile with
-      credits = balanceAfterSpin;
-    };
-    users.add(caller, updatedProfile);
-
-    {
+    let spinResultRecord : SpinResult = {
       user = caller;
       outcome;
       profit;
       balanceAfterSpin;
     };
+
+    let updatedProfile : UserProfile = {
+      profile with
+      credits = balanceAfterSpin;
+      lastSpinResult = ?spinResultRecord;
+    };
+    users.add(caller, updatedProfile);
+
+    spinResultRecord;
   };
 
   func handleWithdrawal(value : Nat) : Nat {

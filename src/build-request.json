@@ -1,51 +1,133 @@
 {
   "kind": "build_request",
-  "title": "Make the spinning/loading spinner visible during wheel spins",
+  "title": "Implement 4-section Tiger/Dragon/Miss/Crit spin wheel with non-image wheel rendering, pointer, correct payouts, and outcome feedback",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Ensure the spinner is clearly visible when the user taps the Spin button (during `isSpinning` / `showEffects` states), including when the button is disabled. The spinner and the \"Spinning...\" label must not be faded out by disabled styling in dark mode.",
+      "text": "Replace the current wheel rendering in `frontend/src/components/game/SpinWheel.tsx` so the wheel is a true circular element (not a rotated image) divided into exactly 4 clearly labeled sections: Tiger, Dragon, Miss, Crit. Use an SVG/CSS-based wheel (or a circle PNG if already present), and ensure the wheel is visibly rendered at all times (idle and spinning).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "recent-messages"
         ],
         "quotes": [
-          "where is the spinner"
+          "yeah finally it appears butt ahhh see how its lookinh like 1 of all dont put image instead use circle element to implement a spinner or use circle png and second it should have 4 sections tiger dragon miss crit"
         ]
       },
       "acceptanceCriteria": [
-        "On GamePage, when a spin is in progress, the Spin button shows a clearly visible animated spinner and the text \"Spinning...\".",
-        "The spinner remains clearly visible even though the button is disabled to prevent double-clicking (i.e., disabled-state opacity does not make the spinner effectively invisible).",
-        "The spinner and text have sufficient contrast against the button background in the default dark theme."
+        "On the Game page, the wheel appears as a circle (not a diamond/rotated square image).",
+        "The wheel has exactly 4 segments and each segment is visibly labeled: Tiger, Dragon, Miss, Crit.",
+        "The wheel is visible both before and during a spin (no blank/transparent state)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Standardize wheel loading feedback so users always see an obvious loading indicator while the wheel image is loading (or slow to load), and it remains visible until the wheel image is actually rendered.",
+      "text": "Implement/ensure a fixed pointer at the top-center of the wheel area that indicates the selected segment when the wheel stops. The pointer must remain fixed while the wheel rotates beneath it.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "recent-messages"
         ],
         "quotes": [
-          "where is the spinner"
+          "also implement a pointer of result on top",
+          "yes it should be fix it point the result when the spinner stops spinning"
         ]
       },
       "acceptanceCriteria": [
-        "When the wheel image has not loaded yet, the wheel area displays a clearly visible loading indicator (spinner + short label).",
-        "Once the wheel image loads successfully, the loading indicator disappears and the wheel is shown.",
-        "If the wheel image errors/timeouts, the UI shows a clear fallback state (not a blank area)."
+        "A pointer is always visible above the wheel at top-center.",
+        "During spin animation, the pointer does not move; only the wheel rotates.",
+        "When the wheel stops, the pointer aligns to the final outcome segment."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Add a smooth spin interaction flow on `frontend/src/pages/GamePage.tsx`: when the user clicks Spin, deduct 50 credits per spin via the backend spin call, animate the wheel smoothly, stop on the backend-provided outcome, then show an outcome result popup/notification with green styling for wins (Tiger/Dragon), neutral styling for Miss, and red styling for Crit.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages"
+        ],
+        "quotes": [
+          "add a smooth spinning animation of the wheel when user click spin the 50 credit deduct on each spin and then the spinner stop result pops up in green red accordingly to the result"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Clicking Spin triggers a visible smooth wheel rotation and then a stop (no instant jump).",
+        "Spin button is disabled while spinning to prevent double-spins.",
+        "After the wheel stops, the UI shows a clear result popup/notification with: win=green (Tiger/Dragon), miss=neutral, crit=red.",
+        "If the user has < 50 credits, spinning is blocked and an English error message is shown."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Ensure the balance displayed to the user updates to reflect the backend outcome and payout rules: Spin cost is 50 credits each time; Dragon pays 1.96×50, Tiger pays 1.4×50, Miss pays 0 (no payout beyond the spin cost), and Crit deducts an additional 25 credits (i.e., extra loss on top of the 50 spin cost).",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "recent-messages"
+        ],
+        "quotes": [
+          "one spin should only cost 50 credits",
+          "1.96x of 50 if dragon comes and 1.4x of 50 if tiger comes and on miss 0 and on crit user loose .05x means additional 25 from balance",
+          "oh my bad it should be 0.5 means 25 creds"
+        ]
+      },
+      "acceptanceCriteria": [
+        "After each completed spin, the user’s displayed balance matches `balanceAfterSpin` returned by the backend.",
+        "Dragon outcome results in net +48 credits vs pre-spin balance (win 98 minus 50 cost).",
+        "Tiger outcome results in net +20 credits vs pre-spin balance (win 70 minus 50 cost).",
+        "Miss outcome results in net -50 credits vs pre-spin balance (50 cost, no payout).",
+        "Crit outcome results in net -75 credits vs pre-spin balance (50 cost + additional 25 loss)."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Update backend `spinWheel()` in `backend/main.mo` so outcomes are not hard-coded to a fixed value and instead vary per spin according to the configured probabilities, while continuing to return `outcome`, `profit`, and `balanceAfterSpin` consistent with the payout rules (including Crit additional -25 credits beyond the 50 credit spin cost).",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "recent-messages"
+        ],
+        "quotes": [
+          "add a smooth spinning animation of the wheel when user click spin the 50 credit deduct on each spin ... and the result should reflect in balance acc to the outcome",
+          "oh my bad it should be 0.5 means 25 creds"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Two consecutive calls to `spinWheel()` can produce different outcomes (i.e., result is not constant).",
+        "Returned `profit` values align with the specified rules: Dragon=+48, Tiger=+20, Miss=-50, Crit=-75 (based on base bet 50).",
+        "`balanceAfterSpin` is computed from the caller’s prior credits and the computed `profit`, and the user’s stored credits are updated accordingly."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Ensure outcome-specific visual effects are shown after the wheel stops: rewarding effect for Tiger/Dragon, neutral effect for Miss, and loss animation for Crit, and ensure these effects do not appear before the wheel has finished spinning.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages"
+        ],
+        "quotes": [
+          "also show result of spin with rewarding effect if tiger or dragon neutral on miss and loss animation on crit"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Effects are triggered only after `onSpinComplete` fires (wheel stopped).",
+        "Tiger/Dragon display a win/reward effect; Miss displays a neutral effect; Crit displays a loss effect.",
+        "After the effect completes, the user can spin again."
       ]
     }
   ],
   "constraints": [
-    "Do not modify any files under frontend/src/components/ui (read-only); compose/override styles at usage sites (e.g., GamePage) or in non-immutable components like PremiumSpinner."
+    "Backend must remain a single Motoko actor in `backend/main.mo` (no additional backend services).",
+    "Do not modify files under `frontend/src/components/ui` or other immutable paths listed in SYSTEM_CONTEXT.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Changing backend spin logic or timing.",
-    "Adding new payment or authentication features."
+    "Adding third-party authentication providers beyond Internet Identity.",
+    "Adding real-time multiplayer or chat features.",
+    "Implementing withdrawals functionality (currently a placeholder feature)."
   ],
   "imageRequirements": {
     "required": [],

@@ -93,6 +93,7 @@ export interface UserProfile {
   'lastUpdateTime' : bigint,
   'creationTime' : bigint,
   'bonusCouponAvailed' : boolean,
+  'lastSpinResult' : [] | [SpinResult],
   'balanceUpdates' : Array<bigint>,
   'profileSetupCompleted' : boolean,
   'transactions' : Array<Transaction>,

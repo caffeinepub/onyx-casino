@@ -252,15 +252,23 @@
     }
   }
 
+  /* Wheel container - hardened for visibility */
   .wheel-container {
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    position: relative;
+    z-index: 10;
+    min-height: 280px;
+    min-width: 280px;
   }
 
+  /* Wheel pointer - always visible */
   .wheel-pointer {
     animation: pointerPulse 2s ease-in-out infinite;
+    z-index: 20;
+    position: relative;
   }
 
   @keyframes pointerPulse {

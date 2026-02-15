@@ -55,6 +55,18 @@ export const Transaction = IDL.Record({
   'outcallType' : IDL.Opt(IDL.Text),
   'amount' : IDL.Nat,
 });
+export const GameOutcome = IDL.Variant({
+  'tiger' : IDL.Null,
+  'crit' : IDL.Null,
+  'miss' : IDL.Null,
+  'dragon' : IDL.Null,
+});
+export const SpinResult = IDL.Record({
+  'user' : IDL.Principal,
+  'balanceAfterSpin' : IDL.Nat,
+  'profit' : IDL.Int,
+  'outcome' : GameOutcome,
+});
 export const UserProfile = IDL.Record({
   'id' : IDL.Text,
   'bonusGranted' : IDL.Bool,
@@ -69,6 +81,7 @@ export const UserProfile = IDL.Record({
   'lastUpdateTime' : IDL.Int,
   'creationTime' : IDL.Int,
   'bonusCouponAvailed' : IDL.Bool,
+  'lastSpinResult' : IDL.Opt(SpinResult),
   'balanceUpdates' : IDL.Vec(IDL.Int),
   'profileSetupCompleted' : IDL.Bool,
   'transactions' : IDL.Vec(Transaction),
@@ -87,18 +100,6 @@ export const StripeSessionStatus = IDL.Variant({
 export const StripeConfiguration = IDL.Record({
   'allowedCountries' : IDL.Vec(IDL.Text),
   'secretKey' : IDL.Text,
-});
-export const GameOutcome = IDL.Variant({
-  'tiger' : IDL.Null,
-  'crit' : IDL.Null,
-  'miss' : IDL.Null,
-  'dragon' : IDL.Null,
-});
-export const SpinResult = IDL.Record({
-  'user' : IDL.Principal,
-  'balanceAfterSpin' : IDL.Nat,
-  'profit' : IDL.Int,
-  'outcome' : GameOutcome,
 });
 export const http_header = IDL.Record({
   'value' : IDL.Text,
@@ -259,6 +260,18 @@ export const idlFactory = ({ IDL }) => {
     'outcallType' : IDL.Opt(IDL.Text),
     'amount' : IDL.Nat,
   });
+  const GameOutcome = IDL.Variant({
+    'tiger' : IDL.Null,
+    'crit' : IDL.Null,
+    'miss' : IDL.Null,
+    'dragon' : IDL.Null,
+  });
+  const SpinResult = IDL.Record({
+    'user' : IDL.Principal,
+    'balanceAfterSpin' : IDL.Nat,
+    'profit' : IDL.Int,
+    'outcome' : GameOutcome,
+  });
   const UserProfile = IDL.Record({
     'id' : IDL.Text,
     'bonusGranted' : IDL.Bool,
@@ -273,6 +286,7 @@ export const idlFactory = ({ IDL }) => {
     'lastUpdateTime' : IDL.Int,
     'creationTime' : IDL.Int,
     'bonusCouponAvailed' : IDL.Bool,
+    'lastSpinResult' : IDL.Opt(SpinResult),
     'balanceUpdates' : IDL.Vec(IDL.Int),
     'profileSetupCompleted' : IDL.Bool,
     'transactions' : IDL.Vec(Transaction),
@@ -291,18 +305,6 @@ export const idlFactory = ({ IDL }) => {
   const StripeConfiguration = IDL.Record({
     'allowedCountries' : IDL.Vec(IDL.Text),
     'secretKey' : IDL.Text,
-  });
-  const GameOutcome = IDL.Variant({
-    'tiger' : IDL.Null,
-    'crit' : IDL.Null,
-    'miss' : IDL.Null,
-    'dragon' : IDL.Null,
-  });
-  const SpinResult = IDL.Record({
-    'user' : IDL.Principal,
-    'balanceAfterSpin' : IDL.Nat,
-    'profit' : IDL.Int,
-    'outcome' : GameOutcome,
   });
   const http_header = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
   const http_request_result = IDL.Record({

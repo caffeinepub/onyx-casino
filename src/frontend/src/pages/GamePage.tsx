@@ -49,131 +49,173 @@ export default function GamePage() {
 
       // Show toast based on profit
       const profit = Number(result.profit);
+      const newBalance = Number(result.balanceAfterSpin);
+      
       if (profit > 0) {
-        toast.success(`You won ${profit} credits!`, {
-          description: `New balance: ${Number(result.balanceAfterSpin).toLocaleString()} credits`
+        toast.success(`You won ${profit} credits! 🎉`, {
+          description: `New balance: ${newBalance} credits`,
+          className: 'bg-success/10 border-success/50'
         });
-      } else if (profit < 0) {
-        toast.error(`You lost ${Math.abs(profit)} credits`, {
-          description: `New balance: ${Number(result.balanceAfterSpin).toLocaleString()} credits`
+      } else if (profit === 0) {
+        toast.info(`Miss! No win this time.`, {
+          description: `Balance: ${newBalance} credits`,
+          className: 'bg-muted/10 border-muted/50'
         });
       } else {
-        toast.info('No change in balance', {
-          description: `Balance: ${Number(result.balanceAfterSpin).toLocaleString()} credits`
+        toast.error(`Lost ${Math.abs(profit)} credits`, {
+          description: `Balance: ${newBalance} credits`,
+          className: 'bg-destructive/10 border-destructive/50'
         });
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to spin wheel');
+      console.error('Spin error:', error);
+      toast.error(error.message || 'Spin failed. Please try again.');
       setIsSpinning(false);
-      setLastOutcome(null);
+      setShowEffects(false);
     }
   };
 
-  // Show lightweight loading only on initial load
-  if (profileLoading && !isFetched) {
+  const payoutInfo = [
+    { label: 'Tiger', multiplier: '1.4x', payout: '+20', color: 'text-primary' },
+    { label: 'Dragon', multiplier: '1.96x', payout: '+48', color: 'text-primary' },
+    { label: 'Miss', multiplier: '0x', payout: '-50', color: 'text-muted-foreground' },
+    { label: 'Crit', multiplier: '-0.5x', payout: '-75', color: 'text-destructive' }
+  ];
+
+  if (profileLoading || !isFetched) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <PremiumSpinner size="lg" />
+      <div className="min-h-screen flex items-center justify-center">
+        <PremiumSpinner size="xl" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-        {/* Left: Hero Section */}
-        <div className="space-y-6 animate-fade-in order-2 lg:order-1">
-          <Badge className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0 text-sm font-bold">
-            <Sparkles className="h-4 w-4" />
-            JACKPOT: ₹10,000,000
-          </Badge>
-
-          <div className="space-y-4">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              <span className="text-gradient">The Peak of Betting</span>
+    <div className="min-h-screen pb-20">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background border-b border-border/50">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,oklch(0.65_0.18_45/0.15),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,oklch(0.65_0.18_45/0.1),transparent_50%)]" />
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <div className="text-center space-y-3 sm:space-y-4">
+            <Badge variant="outline" className="border-primary/50 text-primary">
+              <Sparkles className="h-3 w-3 mr-1" />
+              Live Casino
+            </Badge>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gradient">
+              Spin the Wheel
             </h1>
-            <p className="text-base md:text-lg text-muted-foreground max-w-md">
-              Experience fair play and massive rewards on Nepal's premier gaming platform. Spin the wheel to test your destiny.
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+              Test your luck with every spin. 50 credits per spin.
             </p>
           </div>
-
-          {/* Payout Info Cards */}
-          <div className="grid grid-cols-2 gap-4 max-w-md">
-            <Card className="premium-card border-primary/20">
-              <CardContent className="p-4 text-center">
-                <p className="text-2xl md:text-3xl font-bold text-primary">1.96x</p>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mt-1">Dragon Payout</p>
-              </CardContent>
-            </Card>
-            <Card className="premium-card border-primary/20">
-              <CardContent className="p-4 text-center">
-                <p className="text-2xl md:text-3xl font-bold text-primary">1.40x</p>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mt-1">Tiger Payout</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Quick Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <Button
-              onClick={() => navigate({ to: '/buy-credits' })}
-              variant="outline"
-              size="lg"
-              className="hover-lift gap-2 bg-background/50"
-            >
-              <CreditCard className="h-5 w-5" />
-              Deposit Funds
-            </Button>
-            <Button
-              onClick={() => navigate({ to: '/transactions' })}
-              variant="outline"
-              size="lg"
-              className="hover-lift gap-2 bg-background/50"
-            >
-              <Receipt className="h-5 w-5" />
-              View History
-            </Button>
-          </div>
         </div>
+      </div>
 
-        {/* Right: Wheel + Spin Button */}
-        <div className="space-y-6 animate-fade-in order-1 lg:order-2" style={{ animationDelay: '100ms' }}>
-          <Card className="border-primary/20 premium-surface">
-            <CardContent className="p-6 flex items-center justify-center">
-              <div className="relative">
-                <SpinWheel 
-                  outcome={lastOutcome || undefined} 
-                  isSpinning={isSpinning}
-                  onSpinComplete={handleSpinComplete}
-                />
-                {showEffects && (
-                  <OutcomeEffects 
-                    outcome={lastOutcome} 
-                    onEffectComplete={handleEffectComplete}
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* Payout Info Cards */}
+          <div className="lg:col-span-1 space-y-4">
+            <h2 className="text-xl font-bold text-foreground mb-4">Payout Table</h2>
+            {payoutInfo.map((info) => (
+              <Card key={info.label} className="premium-card hover-lift">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-foreground">{info.label}</p>
+                      <p className={`text-sm ${info.color}`}>{info.multiplier}</p>
+                    </div>
+                    <div className={`text-xl font-bold ${info.color}`}>
+                      {info.payout}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+
+            {/* Quick Actions */}
+            <div className="space-y-3 pt-4">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate({ to: '/buy-credits' })}
+              >
+                <CreditCard className="h-4 w-4 mr-2" />
+                Buy Credits
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate({ to: '/transactions' })}
+              >
+                <Receipt className="h-4 w-4 mr-2" />
+                View History
+              </Button>
+            </div>
+          </div>
+
+          {/* Wheel Section */}
+          <div className="lg:col-span-2">
+            <Card className="premium-card overflow-visible min-h-[500px]">
+              <CardContent className="p-6 sm:p-8 flex flex-col items-center justify-center space-y-6">
+                {/* Balance Display */}
+                <div className="w-full flex justify-center">
+                  <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary/10 border border-primary/30">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    <span className="text-sm font-medium text-muted-foreground">Balance:</span>
+                    <span className="text-2xl font-bold text-primary">{balance}</span>
+                    <span className="text-sm font-medium text-muted-foreground">credits</span>
+                  </div>
+                </div>
+
+                {/* Wheel */}
+                <div className="relative w-full max-w-md">
+                  <SpinWheel
+                    isSpinning={isSpinning}
+                    outcome={lastOutcome || undefined}
+                    onSpinComplete={handleSpinComplete}
                   />
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  
+                  {/* Outcome Effects Overlay */}
+                  {showEffects && lastOutcome && (
+                    <OutcomeEffects
+                      outcome={lastOutcome}
+                      onEffectComplete={handleEffectComplete}
+                    />
+                  )}
+                </div>
 
-          <Button
-            onClick={handleSpin}
-            disabled={isSpinning || showEffects || balance < 50}
-            size="lg"
-            className="w-full h-16 text-lg font-bold hover-lift touch-friendly shadow-premium-lg bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/90 hover:to-primary/70 disabled:opacity-100"
-          >
-            {isSpinning || showEffects ? (
-              <span className="flex items-center justify-center opacity-100">
-                <PremiumSpinner size="sm" className="mr-2" />
-                <span className="text-foreground font-bold">Spinning...</span>
-              </span>
-            ) : (
-              <>
-                <TrendingUp className="mr-2 h-5 w-5" />
-                SPIN • 50 CREDITS
-              </>
-            )}
-          </Button>
+                {/* Spin Button */}
+                <Button
+                  size="lg"
+                  onClick={handleSpin}
+                  disabled={isSpinning || balance < 50}
+                  className="w-full max-w-xs text-lg font-bold h-14 disabled:opacity-100"
+                >
+                  {isSpinning ? (
+                    <span className="opacity-100 flex items-center gap-2">
+                      <PremiumSpinner size="sm" />
+                      Spinning...
+                    </span>
+                  ) : balance < 50 ? (
+                    'Insufficient Balance'
+                  ) : (
+                    <>
+                      <Sparkles className="h-5 w-5 mr-2" />
+                      Spin (50 credits)
+                    </>
+                  )}
+                </Button>
+
+                {/* Info Text */}
+                <p className="text-sm text-muted-foreground text-center max-w-md">
+                  Each spin costs 50 credits. Win up to 1.96x with Dragon, or lose an additional 0.5x with Crit.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
