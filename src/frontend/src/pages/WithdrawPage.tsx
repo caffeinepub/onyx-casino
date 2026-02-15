@@ -1,41 +1,42 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import PageHeader from '../components/common/PageHeader';
 import { AlertCircle } from 'lucide-react';
 
 export default function WithdrawPage() {
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Withdraw</h1>
-        <p className="text-muted-foreground">Request a withdrawal from your account</p>
-      </div>
+    <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
+      <PageHeader
+        title="Withdraw Funds"
+        description="Request a withdrawal from your account"
+      />
 
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Withdrawal functionality is currently being implemented. Please contact support for withdrawal requests.
-        </AlertDescription>
-      </Alert>
-
-      <Card className="border-primary/20">
+      <Card className="premium-card border-primary/20 animate-fade-in">
         <CardHeader>
-          <CardTitle>Withdrawal Information</CardTitle>
-          <CardDescription>How withdrawals work</CardDescription>
+          <CardTitle className="text-lg md:text-xl">Withdrawal Information</CardTitle>
+          <CardDescription className="text-xs md:text-sm">Important details about withdrawals</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2 text-sm">
-            <p className="text-muted-foreground">
-              • Withdrawals are processed manually by our admin team
-            </p>
-            <p className="text-muted-foreground">
-              • Processing time: 1-3 business days
-            </p>
-            <p className="text-muted-foreground">
-              • Minimum withdrawal: 1000 credits
-            </p>
-            <p className="text-muted-foreground">
-              • Credits are converted at the same rate as purchases (2 credits = $1)
-            </p>
+          <Alert className="bg-primary/5 border-primary/20">
+            <AlertCircle className="h-4 w-4 text-primary" />
+            <AlertDescription className="text-sm">
+              Withdrawal functionality is currently under development. Please check back soon.
+            </AlertDescription>
+          </Alert>
+
+          <div className="space-y-3 text-sm text-muted-foreground">
+            <div className="flex justify-between py-2 border-b border-border">
+              <span>Minimum Withdrawal:</span>
+              <span className="font-medium text-foreground">1,000 credits</span>
+            </div>
+            <div className="flex justify-between py-2 border-b border-border">
+              <span>Processing Time:</span>
+              <span className="font-medium text-foreground">1-3 business days</span>
+            </div>
+            <div className="flex justify-between py-2 border-b border-border">
+              <span>Conversion Rate:</span>
+              <span className="font-medium text-foreground">1 credit = ₹0.25</span>
+            </div>
           </div>
         </CardContent>
       </Card>

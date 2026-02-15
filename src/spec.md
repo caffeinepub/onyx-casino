@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Improve focus and readability by applying a consistent blurred + dimmed backdrop behind any open overlay UI (modals and sheets).
+**Goal:** Update the app UI to match the provided dark premium casino reference style and improve perceived performance by reducing unnecessary refetching and blocking loading states.
 
 **Planned changes:**
-- Add global CSS/theme overrides to apply a dim + blur effect to overlay backdrops used by existing dialogs/modals (e.g., ProfileSetupModal).
-- Apply the same dim + blur backdrop effect to slide-over sheets (e.g., the mobile navigation hamburger menu).
-- Ensure the blur/dim affects only the page behind the overlay (not the modal/sheet content) and make no changes to immutable `frontend/src/components/ui` files.
+- Update the global layout (header/navigation/background) to match the reference: dark premium header surface, compact pill-style nav items with clear active state, and a right-side “Verified Secure” badge plus balance chip (with placeholder while loading).
+- Redesign the Game page layout and hierarchy to match the reference: left marketing hero (headline, description, jackpot badge), right wheel area, two quick-action buttons (Deposit Funds / View History), and a wide gradient primary spin CTA showing “50 credits”, while keeping existing game behavior unchanged.
+- Apply the same visual system across all user and admin pages (typography, spacing, page headers, card/panel surfaces, and button styles) without changing existing flows or user-facing text.
+- Improve page load/transition performance by reducing repeated React Query refetching, using cached data when available, avoiding full-page spinners, and limiting query invalidation/refetch during actor initialization—without backend interface changes.
 
-**User-visible outcome:** When a modal or sheet opens, the rest of the app is visibly dimmed and blurred, keeping attention on the active popup while the popup content remains crisp.
+**User-visible outcome:** The app visually matches the provided premium casino reference across pages, the Game page has the new hero/wheel/CTA layout, and navigation between pages feels immediate with fewer blocking loading screens when data is already cached.

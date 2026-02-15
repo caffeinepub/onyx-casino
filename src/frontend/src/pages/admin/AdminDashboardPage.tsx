@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import PageHeader from '../../components/common/PageHeader';
 import { Users, Settings, ArrowDownToLine, QrCode } from 'lucide-react';
 
 export default function AdminDashboardPage() {
@@ -8,16 +9,16 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
-      <div className="animate-fade-in">
-        <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-        <p className="text-muted-foreground">Manage casino settings and users</p>
-      </div>
+      <PageHeader
+        title="Admin Dashboard"
+        description="Manage casino settings and users"
+      />
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <Card 
-          className="border-primary/20 hover:border-primary/50 transition-all cursor-pointer hover-lift animate-fade-in" 
+          className="premium-card border-primary/20 hover:border-primary/50 transition-all cursor-pointer hover-lift animate-fade-in" 
           onClick={() => navigate({ to: '/admin/users' })}
-          style={{ animationDelay: '100ms' }}
+          style={{ animationDelay: '50ms' }}
         >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -34,9 +35,9 @@ export default function AdminDashboardPage() {
         </Card>
 
         <Card 
-          className="border-primary/20 hover:border-primary/50 transition-all cursor-pointer hover-lift animate-fade-in" 
+          className="premium-card border-primary/20 hover:border-primary/50 transition-all cursor-pointer hover-lift animate-fade-in" 
           onClick={() => navigate({ to: '/admin/wheel-config' })}
-          style={{ animationDelay: '150ms' }}
+          style={{ animationDelay: '100ms' }}
         >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -53,9 +54,9 @@ export default function AdminDashboardPage() {
         </Card>
 
         <Card 
-          className="border-primary/20 hover:border-primary/50 transition-all cursor-pointer hover-lift animate-fade-in" 
+          className="premium-card border-primary/20 hover:border-primary/50 transition-all cursor-pointer hover-lift animate-fade-in" 
           onClick={() => navigate({ to: '/admin/withdrawals' })}
-          style={{ animationDelay: '200ms' }}
+          style={{ animationDelay: '150ms' }}
         >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -72,9 +73,9 @@ export default function AdminDashboardPage() {
         </Card>
 
         <Card 
-          className="border-primary/20 hover:border-primary/50 transition-all cursor-pointer hover-lift animate-fade-in" 
+          className="premium-card border-primary/20 hover:border-primary/50 transition-all cursor-pointer hover-lift animate-fade-in" 
           onClick={() => navigate({ to: '/admin/manual-payments' })}
-          style={{ animationDelay: '250ms' }}
+          style={{ animationDelay: '200ms' }}
         >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

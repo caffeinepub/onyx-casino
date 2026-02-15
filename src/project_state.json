@@ -2,17 +2,44 @@
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
   "summary": "New project",
-  "architectural_notes": [],
+  "architectural_notes": [
+    "UI updates should follow a single reference design consistently across all pages.",
+    "Performance work should focus on reducing overall page load time across the app."
+  ],
   "known_issues": [
-    "Popups/modals do not blur/dim the background, reducing focus on the active overlay"
+    "All pages are taking too long to load (performance regression/issue reported by user)."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-add-a-consistent-blurred-dimmed-backdrop-effect-whenever-an-overlay-ui-is-open-e-g-modal-dialogs-like-profilesetupmodal-and-slide-over-sheets-so-the-underlying-page-is-visually-de-emphasized-and-focus-stays-on-the-active-popup",
-      "title": "Add a consistent blurred + dimmed backdrop effect whenever an overlay UI is open (e.g., modal dialogs like ProfileSetupModal and slide-over sheets), so the underlying page is visually de-emphasized and focus stays on the active popup.",
+      "id": "feature-update-the-global-app-layout-header-navigation-background-to-visually-match-the-uploaded-reference-image-style-dark-premium-casino-look-compact-pill-style-nav-items-and-a-right-side-status-balance-area",
+      "title": "Update the global app layout (header + navigation + background) to visually match the uploaded reference image style: dark premium casino look, compact pill-style nav items, and a right-side status/balance area.",
       "reqIds": [
         "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-the-game-page-ui-to-match-the-uploaded-reference-image-layout-and-hierarchy-marketing-hero-on-the-left-wheel-primary-cta-on-the-right-while-keeping-existing-game-functionality-unchanged",
+      "title": "Redesign the Game page UI to match the uploaded reference image layout and hierarchy (marketing hero on the left, wheel + primary CTA on the right), while keeping existing game functionality unchanged.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-the-same-reference-inspired-visual-system-consistently-across-all-user-and-admin-pages-typography-scale-card-surfaces-button-styles-page-headers-and-spacing-without-changing-features-or-flows",
+      "title": "Apply the same reference-inspired visual system consistently across all user and admin pages (typography scale, card surfaces, button styles, page headers, and spacing) without changing features or flows.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-reported-slow-page-load-behavior-across-the-app-by-reducing-unnecessary-refetching-avoiding-full-page-loading-states-when-cached-data-exists-and-minimizing-expensive-work-during-route-transitions",
+      "title": "Fix the reported slow page load behavior across the app by reducing unnecessary refetching, avoiding full-page loading states when cached data exists, and minimizing expensive work during route transitions.",
+      "reqIds": [
+        "REQ-4"
       ],
       "version": 1
     }
@@ -20,12 +47,18 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Blur/dim the background when any popup/modal appears so focus stays on the active overlay",
+      "summary": "Update the UI to match the provided reference design across the app",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Investigate and fix slow page load performance across all pages",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Blur/dim background behind popups and modals to improve focus",
+  "projectName": "Update UI to match provided reference and fix slow page load performance",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

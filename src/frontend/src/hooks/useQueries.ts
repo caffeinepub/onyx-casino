@@ -14,6 +14,9 @@ export function useGetCallerUserProfile() {
     },
     enabled: !!actor && !actorFetching,
     retry: false,
+    staleTime: 30000, // 30 seconds
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   return {
@@ -64,6 +67,9 @@ export function useGetLeaderboard() {
       return actor.getLeaderboard();
     },
     enabled: !!actor && !isFetching,
+    staleTime: 60000, // 1 minute
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -77,6 +83,9 @@ export function useIsCallerAdmin() {
       return actor.isCallerAdmin();
     },
     enabled: !!actor && !isFetching,
+    staleTime: 300000, // 5 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -90,6 +99,8 @@ export function useGetHouseEdge() {
       return actor.getHouseEdgeValue();
     },
     enabled: !!actor && !isFetching,
+    staleTime: 60000,
+    refetchOnMount: false,
   });
 }
 
@@ -118,6 +129,9 @@ export function useGetCreditPackages() {
       return actor.getCreditPackages();
     },
     enabled: !!actor && !isFetching,
+    staleTime: 300000, // 5 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -131,6 +145,9 @@ export function useGetManualPaymentConfig() {
       return actor.getManualPaymentConfig();
     },
     enabled: !!actor && !isFetching,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -164,16 +181,17 @@ export function useCreateManualPaymentRequest() {
   });
 }
 
-export function useGetManualPaymentRequest(requestId: bigint | null) {
+export function useGetManualPaymentRequest(requestId: bigint) {
   const { actor, isFetching } = useActor();
 
   return useQuery({
-    queryKey: ['manualPaymentRequest', requestId?.toString()],
+    queryKey: ['manualPaymentRequest', requestId.toString()],
     queryFn: async () => {
-      if (!actor || !requestId) return null;
+      if (!actor) throw new Error('Actor not available');
       return actor.getManualPaymentRequest(requestId);
     },
-    enabled: !!actor && !isFetching && !!requestId,
+    enabled: !!actor && !isFetching,
+    staleTime: 10000,
   });
 }
 
@@ -187,6 +205,9 @@ export function useGetMyManualPaymentRequests() {
       return actor.getMyManualPaymentRequests();
     },
     enabled: !!actor && !isFetching,
+    staleTime: 30000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -200,6 +221,8 @@ export function useGetAllManualPaymentRequests() {
       return actor.getAllManualPaymentRequests();
     },
     enabled: !!actor && !isFetching,
+    staleTime: 30000,
+    refetchOnMount: false,
   });
 }
 
@@ -214,6 +237,7 @@ export function useApproveManualPayment() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allManualPaymentRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['myManualPaymentRequests'] });
       queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
     },
   });
@@ -230,6 +254,7 @@ export function useDeclineManualPayment() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allManualPaymentRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['myManualPaymentRequests'] });
     },
   });
 }
@@ -245,7 +270,6 @@ export function useAdminUpdateCredits() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
     },
   });
 }

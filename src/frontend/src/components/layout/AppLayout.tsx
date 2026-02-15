@@ -4,7 +4,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useIsCallerAdmin, useGetCallerUserProfile } from '../../hooks/useQueries';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Home, Wallet, Receipt, User, CreditCard, Shield, LogOut } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Menu, Home, Wallet, Receipt, User, CreditCard, Shield, LogOut, ShieldCheck, Coins } from 'lucide-react';
 import { useState } from 'react';
 
 export default function AppLayout() {
@@ -23,9 +24,10 @@ export default function AppLayout() {
   };
 
   const displayName = userProfile?.displayName || 'Unnamed User';
+  const balance = userProfile?.credits ? Number(userProfile.credits) : 0;
 
   const navItems = [
-    { path: '/', label: 'Game', icon: Home },
+    { path: '/', label: 'Lobby', icon: Home },
     { path: '/wallet', label: 'Wallet', icon: Wallet },
     { path: '/transactions', label: 'Transactions', icon: Receipt },
     { path: '/profile', label: 'Profile', icon: User },
@@ -44,14 +46,14 @@ export default function AppLayout() {
           navigate({ to: path });
           onClick?.();
         }}
-        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover-lift ${
+        className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 font-medium text-sm ${
           isActive
-            ? 'bg-primary text-primary-foreground shadow-premium'
+            ? 'bg-primary text-primary-foreground shadow-lg'
             : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
         }`}
       >
-        <Icon className="h-5 w-5" />
-        <span className="font-medium">{label}</span>
+        <Icon className="h-4 w-4" />
+        <span>{label}</span>
       </button>
     );
   };
@@ -92,17 +94,18 @@ export default function AppLayout() {
         </div>
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 animate-slide-down shadow-sm">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-4">
+      {/* Premium Header */}
+      <header className="sticky top-0 z-50 border-b border-border/20 premium-header-surface backdrop-blur-2xl animate-slide-down shadow-premium">
+        <div className="container flex h-16 items-center justify-between px-4 gap-4">
+          {/* Left: Logo + Mobile Menu */}
+          <div className="flex items-center gap-3">
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="md:hidden hover-lift">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-64 p-0 premium-surface">
+              <SheetContent side="left" className="w-64 p-0 premium-surface border-primary/30 shadow-2xl">
                 <div className="flex flex-col h-full">
                   <div className="p-6 border-b border-border">
                     <img 
@@ -117,7 +120,21 @@ export default function AppLayout() {
                   </div>
                   <nav className="flex-1 p-4 space-y-2">
                     {navItems.map((item) => (
-                      <NavLink key={item.path} {...item} onClick={() => setMobileMenuOpen(false)} />
+                      <button
+                        key={item.path}
+                        onClick={() => {
+                          navigate({ to: item.path });
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full ${
+                          (currentPath === item.path || (item.path === '/admin' && currentPath.startsWith('/admin')))
+                            ? 'bg-primary text-primary-foreground shadow-premium'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                        }`}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span className="font-medium">{item.label}</span>
+                      </button>
                     ))}
                   </nav>
                   <div className="p-4 border-t border-border">
@@ -137,60 +154,76 @@ export default function AppLayout() {
             <img 
               src="/assets/generated/onyx-wordmark.dim_1024x256.png" 
               alt="ONYX Casino" 
-              className="h-8 hidden md:block cursor-pointer hover-lift"
+              className="h-7 cursor-pointer hover-lift"
               onClick={() => navigate({ to: '/' })}
             />
           </div>
 
-          <nav className="hidden md:flex items-center gap-2">
-            {navItems.map((item) => (
+          {/* Center: Pill Navigation (Desktop) */}
+          <nav className="hidden lg:flex items-center gap-1 px-3 py-1.5 rounded-full bg-accent/30 border border-border/40">
+            {navItems.slice(0, 5).map((item) => (
               <NavLink key={item.path} {...item} />
             ))}
           </nav>
 
+          {/* Right: Verified Badge + Balance + Admin (Desktop) */}
           <div className="hidden md:flex items-center gap-3">
-            <div className="text-right mr-2">
-              <p className="text-xs text-muted-foreground">Welcome,</p>
-              <p className="text-sm font-semibold text-primary">{displayName}</p>
+            <Badge variant="outline" className="gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-500 border-emerald-500/30">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              <span className="text-xs font-medium">VERIFIED SECURE</span>
+            </Badge>
+            
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30">
+              <Coins className="h-4 w-4 text-primary" />
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Balance</span>
+                <span className="text-sm font-bold text-primary leading-none">₹{balance.toLocaleString()}</span>
+              </div>
             </div>
+
+            {!adminLoading && isAdmin && (
+              <Button
+                onClick={() => navigate({ to: '/admin' })}
+                variant="outline"
+                size="sm"
+                className="hover-lift gap-2"
+              >
+                <Shield className="h-4 w-4" />
+                Admin
+              </Button>
+            )}
+
             <Button
               onClick={handleLogout}
-              variant="outline"
+              variant="ghost"
               size="sm"
               className="hover-lift"
             >
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
+              <LogOut className="h-4 w-4" />
             </Button>
+          </div>
+
+          {/* Mobile: Balance chip only */}
+          <div className="md:hidden flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30">
+            <Coins className="h-3.5 w-3.5 text-primary" />
+            <span className="text-xs font-bold text-primary">₹{balance.toLocaleString()}</span>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 md:py-8 relative z-10 mb-safe">
+      <main className="container mx-auto px-4 py-6 md:py-8 relative z-10">
         <Outlet />
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border/40 animate-slide-up shadow-premium pb-safe">
-        <div className="flex items-center justify-around px-2 py-1">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border/40 bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 safe-area-inset-bottom shadow-lg">
+        <div className="flex items-center justify-around px-2 py-2">
           {navItems.slice(0, 5).map((item) => (
             <MobileNavButton key={item.path} {...item} />
           ))}
-          {!adminLoading && isAdmin && (
-            <MobileNavButton path="/admin" label="Admin" icon={Shield} />
-          )}
         </div>
       </nav>
-
-      {/* Footer */}
-      <footer className="border-t border-border/40 mt-auto hidden md:block relative z-10">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-sm text-muted-foreground">
-            <p>© {new Date().getFullYear()} ONYX Casino. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

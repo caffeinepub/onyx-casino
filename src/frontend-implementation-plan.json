@@ -1,22 +1,176 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Global blurred + dimmed backdrops for modals and sheets",
+  "title": "Reference-style premium casino UI refresh + faster route transitions",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Apply a consistent global blur + dim backdrop for Radix/Shadcn overlays (Dialog/Sheet) so background content is de-emphasized while overlay content stays sharp.",
+      "summary": "Update global layout header/navigation/background to match the dark premium reference with pill nav and right-side status/balance area.",
       "acceptanceCriteria": [
-        "When ProfileSetupModal is open, the entire app content behind it is visibly dimmed and blurred (not just darkened).",
-        "When the mobile navigation Sheet is open (hamburger menu), the entire app content behind it is visibly dimmed and blurred.",
-        "Backdrop styling is applied globally (via CSS overrides/theme), without editing files under frontend/src/components/ui (immutable).",
-        "Overlay blur/dim does not blur the modal/sheet content itself—only the background behind the overlay."
+        "Header uses a dark/black premium surface with subtle blur/gradient similar to the reference image.",
+        "Primary navigation items are rendered as pill buttons (active state clearly highlighted).",
+        "Right side of the header contains: (1) a small 'Verified Secure' badge, and (2) a balance chip that displays the user balance (or a placeholder while loading).",
+        "The existing generated assets already used in the app (e.g., /assets/generated/onyx-wordmark.dim_1024x256.png and /assets/generated/onyx-background.dim_1920x1080.png) continue to render correctly and fit the new layout.",
+        "All routes continue to be reachable from the navigation (desktop and mobile)."
       ],
       "file_operations": [
         {
+          "path": "frontend/src/components/layout/AppLayout.tsx",
+          "operation": "modify",
+          "description": "Restyle header to a premium dark blurred surface; convert desktop nav items into compact pill-style buttons with clear active state; replace the current right-side 'Welcome/Logout' cluster with a 'Verified Secure' badge and a balance chip (using cached profile credits or a lightweight placeholder while loading). Ensure existing generated assets remain in use and properly sized, including frontend/public/assets/generated/onyx-wordmark.dim_1024x256.png and frontend/public/assets/generated/onyx-background.dim_1920x1080.png."
+        },
+        {
           "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Add global CSS overrides targeting Radix overlay elements (Dialog/Sheet) to apply backdrop-filter blur and a dimmed background color (using !important where necessary to override existing overlay classes) so only the page behind the overlay is blurred/dimmed while modal/sheet content remains unblurred."
+          "description": "Add/adjust global utility classes to support the reference-inspired header surface (premium blur/gradient), pill navigation styling, and compact chips/badges used in the header."
+        },
+        {
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "Extend theme tokens (as needed) to support the reference-inspired premium gradients/shadows used by the new header/nav/chips without changing existing shadcn/ui component source. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Redesign the Game page layout to match the reference hierarchy (hero left, wheel + primary CTA right) while keeping gameplay behavior unchanged.",
+      "acceptanceCriteria": [
+        "Game page shows a hero section styled like the reference (large headline, short descriptive text, and a jackpot-style badge/pill).",
+        "Game page includes two quick-action buttons styled like the reference: one navigates to Buy Credits (Deposit Funds) and one navigates to Transactions (View History).",
+        "Primary spin CTA is a wide gradient button styled like the reference and clearly indicates the spin cost (50 credits).",
+        "Spin behavior, balance checks, and outcome rendering remain functionally identical to the current implementation.",
+        "Layout is responsive: on small screens, hero/wheel/CTA stack vertically with consistent spacing and no overflow."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/GamePage.tsx",
+          "operation": "modify",
+          "description": "Recompose the Game page into a two-column layout on desktop (marketing hero left; wheel + primary CTA right) and a single-column stacked layout on mobile; add a jackpot pill/badge, hero headline + description, and quick-action buttons that navigate to /buy-credits and /transactions; restyle the spin CTA into a wide premium gradient button labeled with the cost (50 credits) while preserving existing spin logic, balance checks, and outcome handling. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add/adjust utilities for the Game page hero typography scale, jackpot pill, and wide gradient CTA to align with the reference while reusing existing shadcn/ui components. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Apply a consistent reference-inspired visual system across all user and admin pages (typography, surfaces, buttons, headers, spacing) without changing flows.",
+      "acceptanceCriteria": [
+        "Wallet, Transactions, Profile, Buy Credits, Withdraw, and Admin pages share consistent page header styling and spacing.",
+        "Cards and panels use consistent premium surfaces (dark gradients, borders, and shadows) aligned with the reference.",
+        "Buttons (primary/secondary/outline) look consistent across pages and match the reference style direction.",
+        "No user-facing text is removed; only visual presentation changes."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/common/PageHeader.tsx",
+          "operation": "create",
+          "description": "Create a reusable PageHeader component that standardizes page title/subtitle layout, spacing, and optional right-side actions to match the reference-inspired system (used across user and admin pages). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/WalletPage.tsx",
+          "operation": "modify",
+          "description": "Adopt the shared PageHeader and update card/button classNames to use the consistent premium surfaces, borders, shadows, and spacing while keeping existing content and navigation intact. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/TransactionsPage.tsx",
+          "operation": "modify",
+          "description": "Adopt the shared PageHeader and align list rows/cards/badges to the premium surface system and consistent spacing; preserve all text and data. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/ProfilePage.tsx",
+          "operation": "modify",
+          "description": "Adopt the shared PageHeader and align cards/badges/buttons to the same premium surface system; preserve all existing labels and copy (no text removal). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/BuyCreditsPage.tsx",
+          "operation": "modify",
+          "description": "Adopt the shared PageHeader and align package cards, quick offers, dialogs, and action buttons to the consistent premium surfaces and button styles while keeping all existing text and flows intact. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/WithdrawPage.tsx",
+          "operation": "modify",
+          "description": "Align Withdraw page header/cards/alerts to the shared visual system (page header styling, premium surfaces, consistent spacing) without changing the placeholder flow. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Adopt the shared PageHeader and update admin navigation cards/buttons to match the premium surface and spacing system while preserving destinations and copy. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminUsersPage.tsx",
+          "operation": "modify",
+          "description": "Align Admin Users page header/cards/forms/buttons to the shared premium system without altering management functionality. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminWheelConfigPage.tsx",
+          "operation": "modify",
+          "description": "Align Admin Wheel Config page header/cards/forms/buttons to the shared premium system without altering settings functionality. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminManualPaymentRequestsPage.tsx",
+          "operation": "modify",
+          "description": "Align Admin Manual Payments page header/tabs/cards/forms/buttons to the shared premium system without altering workflows. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminWithdrawalsPage.tsx",
+          "operation": "modify",
+          "description": "Align Admin Withdrawals placeholder page to the shared premium system (header/surfaces/spacing) without introducing new features. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Introduce/standardize global utility classes for premium card surfaces, page header spacing/typography, and consistent primary/secondary/outline button styling via className composition (without editing frontend/src/components/ui). Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Improve perceived and actual page-load performance by reducing unnecessary refetching, using cached data, and avoiding blocking full-page spinners during navigation.",
+      "acceptanceCriteria": [
+        "Navigating between pages does not trigger repeated full-screen spinners when the user profile data is already cached.",
+        "React Query queries used across multiple pages (e.g., current user profile, isAdmin) are configured so they do not refetch on every route change by default (use an appropriate staleTime and refetch policy).",
+        "The actor initialization flow does not aggressively refetch ALL queries in a way that causes noticeable delays on page transitions (limit invalidation/refetch to what is necessary).",
+        "Route transitions feel immediate: the layout renders instantly and pages show either cached data or lightweight skeleton/inline loading states rather than blocking the whole page.",
+        "No backend interface changes are required to achieve the performance improvement."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Update shared queries (especially ['currentUserProfile'] and ['isAdmin']) to use an appropriate staleTime and refetch policy (e.g., disable refetch-on-mount/focus by default, keep cached data during transitions, and distinguish initial loading vs background refreshing) so navigation reuses cache and avoids repeated blocking loads."
+        },
+        {
+          "path": "frontend/src/pages/GamePage.tsx",
+          "operation": "modify",
+          "description": "Remove the full-page blocking loading return when cached profile data exists; render the page immediately and use lightweight inline loading/skeleton placeholders only where needed, while keeping spin behavior unchanged."
+        },
+        {
+          "path": "frontend/src/pages/WalletPage.tsx",
+          "operation": "modify",
+          "description": "Avoid full-page spinner when cached profile data exists; render layout immediately and use inline placeholders for balance/transactions when needed."
+        },
+        {
+          "path": "frontend/src/pages/TransactionsPage.tsx",
+          "operation": "modify",
+          "description": "Avoid full-page spinner when cached profile data exists; render header/card immediately and show inline placeholders while background refresh happens."
+        },
+        {
+          "path": "frontend/src/pages/ProfilePage.tsx",
+          "operation": "modify",
+          "description": "Avoid full-page spinner when cached profile data exists; render page immediately and use inline placeholders for profile fields when necessary."
+        },
+        {
+          "path": "frontend/src/pages/BuyCreditsPage.tsx",
+          "operation": "modify",
+          "description": "Reduce blocking load time by preferring cached data for credit packages/manual payment config and rendering the page immediately with inline loading states where needed (instead of a full-screen spinner)."
+        },
+        {
+          "path": "frontend/src/components/auth/AdminRouteGuard.tsx",
+          "operation": "modify",
+          "description": "Adjust admin-guard loading UI to avoid heavy full-page spinners during quick route transitions when admin status is cached (prefer compact inline/skeleton guard UI and rely on cached isAdmin when available)."
         }
       ]
     }

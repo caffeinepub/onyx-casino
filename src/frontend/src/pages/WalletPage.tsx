@@ -2,24 +2,14 @@ import { useNavigate } from '@tanstack/react-router';
 import { useGetCallerUserProfile } from '../hooks/useQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import BalanceTicker from '../components/wallet/BalanceTicker';
+import PageHeader from '../components/common/PageHeader';
 import { CreditCard, ArrowDownToLine, TrendingUp, TrendingDown } from 'lucide-react';
-import PremiumSpinner from '../components/common/PremiumSpinner';
 
 export default function WalletPage() {
   const navigate = useNavigate();
-  const { data: profile, isLoading } = useGetCallerUserProfile();
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <PremiumSpinner size="xl" className="mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading wallet...</p>
-        </div>
-      </div>
-    );
-  }
+  const { data: profile, isLoading, isFetched } = useGetCallerUserProfile();
 
   const balance = profile?.credits ? Number(profile.credits) : 0;
   const transactions = profile?.transactions || [];
@@ -27,19 +17,23 @@ export default function WalletPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
-      <div className="animate-fade-in">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">Wallet</h1>
-        <p className="text-sm md:text-base text-muted-foreground">Manage your credits and transactions</p>
-      </div>
+      <PageHeader
+        title="Wallet"
+        description="Manage your credits and transactions"
+      />
 
       {/* Balance Card */}
-      <Card className="border-primary/20 bg-gradient-to-br from-card to-card/50 animate-fade-in" style={{ animationDelay: '100ms' }}>
+      <Card className="premium-card border-primary/20 animate-fade-in" style={{ animationDelay: '50ms' }}>
         <CardHeader>
           <CardTitle className="text-lg md:text-xl">Current Balance</CardTitle>
           <CardDescription className="text-xs md:text-sm">Your available credits</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <BalanceTicker balance={balance} />
+          {isLoading && !isFetched ? (
+            <Skeleton className="h-16 w-48" />
+          ) : (
+            <BalanceTicker balance={balance} />
+          )}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Button
               onClick={() => navigate({ to: '/buy-credits' })}
@@ -63,13 +57,19 @@ export default function WalletPage() {
       </Card>
 
       {/* Recent Transactions */}
-      <Card className="border-primary/20 animate-fade-in" style={{ animationDelay: '200ms' }}>
+      <Card className="premium-card border-primary/20 animate-fade-in" style={{ animationDelay: '100ms' }}>
         <CardHeader>
           <CardTitle className="text-lg md:text-xl">Recent Transactions</CardTitle>
           <CardDescription className="text-xs md:text-sm">Your latest activity</CardDescription>
         </CardHeader>
         <CardContent>
-          {recentTransactions.length === 0 ? (
+          {isLoading && !isFetched ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          ) : recentTransactions.length === 0 ? (
             <p className="text-center text-muted-foreground py-8 text-sm md:text-base">No transactions yet</p>
           ) : (
             <div className="space-y-3">

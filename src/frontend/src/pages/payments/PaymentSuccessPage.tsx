@@ -5,7 +5,7 @@ import { useGetManualPaymentRequest, useGetMyManualPaymentRequests } from '../..
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { Clock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import { ManualPaymentRequestStatus } from '../../backend';
 import PremiumSpinner from '../../components/common/PremiumSpinner';
 
@@ -15,7 +15,7 @@ export default function PaymentSuccessPage() {
   const search = useSearch({ strict: false }) as { requestId?: string };
   const requestId = search.requestId ? BigInt(search.requestId) : null;
   
-  const { data: request, isLoading } = useGetManualPaymentRequest(requestId);
+  const { data: request, isLoading } = useGetManualPaymentRequest(requestId || BigInt(0));
   const { refetch: refetchMyRequests } = useGetMyManualPaymentRequests();
 
   useEffect(() => {
@@ -24,7 +24,9 @@ export default function PaymentSuccessPage() {
   }, [queryClient]);
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['manualPaymentRequest', requestId?.toString()] });
+    if (requestId) {
+      queryClient.invalidateQueries({ queryKey: ['manualPaymentRequest', requestId.toString()] });
+    }
     queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
     refetchMyRequests();
   };
@@ -61,6 +63,50 @@ export default function PaymentSuccessPage() {
         return 'Your payment request was declined. Please contact support for more information.';
     }
   };
+
+  if (!requestId) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh] animate-fade-in">
+        <Card className="max-w-md border-yellow-500/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3 text-lg md:text-xl">
+              <AlertCircle className="h-8 w-8 text-yellow-500" />
+              Payment Submitted
+            </CardTitle>
+            <CardDescription className="text-xs md:text-sm">
+              Your payment request has been submitted successfully and is awaiting admin verification.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-sm text-muted-foreground p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+              <p className="font-medium text-yellow-600 dark:text-yellow-500 mb-1">What happens next?</p>
+              <ul className="space-y-1 text-xs">
+                <li>• Admin will verify your payment within 24 hours</li>
+                <li>• You'll see your credits update once approved</li>
+                <li>• Check your wallet or transaction history for updates</li>
+              </ul>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={() => navigate({ to: '/wallet' })}
+                className="flex-1 touch-friendly"
+              >
+                View Wallet
+              </Button>
+              <Button
+                onClick={() => navigate({ to: '/' })}
+                variant="outline"
+                className="flex-1 touch-friendly"
+              >
+                Start Playing
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useIsCallerAdmin } from '../../hooks/useQueries';
 import { useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface AdminRouteGuardProps {
   children: React.ReactNode;
@@ -8,20 +9,21 @@ interface AdminRouteGuardProps {
 
 export default function AdminRouteGuard({ children }: AdminRouteGuardProps) {
   const navigate = useNavigate();
-  const { data: isAdmin, isLoading } = useIsCallerAdmin();
+  const { data: isAdmin, isLoading, isFetched } = useIsCallerAdmin();
 
   useEffect(() => {
-    if (!isLoading && !isAdmin) {
+    if (isFetched && !isAdmin) {
       navigate({ to: '/unauthorized' });
     }
-  }, [isAdmin, isLoading, navigate]);
+  }, [isAdmin, isFetched, navigate]);
 
-  if (isLoading) {
+  if (isLoading && !isFetched) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Verifying permissions...</p>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <Skeleton className="h-12 w-64" />
+        <div className="grid md:grid-cols-2 gap-4">
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
         </div>
       </div>
     );

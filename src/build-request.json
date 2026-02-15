@@ -1,35 +1,97 @@
 {
   "kind": "build_request",
-  "title": "Blur/dim background behind popups and modals to improve focus",
+  "title": "Update UI to match provided reference and fix slow page load performance",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add a consistent blurred + dimmed backdrop effect whenever an overlay UI is open (e.g., modal dialogs like ProfileSetupModal and slide-over sheets), so the underlying page is visually de-emphasized and focus stays on the active popup.",
+      "text": "Update the global app layout (header + navigation + background) to visually match the uploaded reference image style: dark premium casino look, compact pill-style nav items, and a right-side status/balance area.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "fix this blur the background while poping up anything on the screen so that focus comes on that thing"
+          "change the ui as this reference"
         ]
       },
       "acceptanceCriteria": [
-        "When ProfileSetupModal is open, the entire app content behind it is visibly dimmed and blurred (not just darkened).",
-        "When the mobile navigation Sheet is open (hamburger menu), the entire app content behind it is visibly dimmed and blurred.",
-        "Backdrop styling is applied globally (via CSS overrides/theme), without editing files under frontend/src/components/ui (immutable).",
-        "Overlay blur/dim does not blur the modal/sheet content itself—only the background behind the overlay."
+        "Header uses a dark/black premium surface with subtle blur/gradient similar to the reference image.",
+        "Primary navigation items are rendered as pill buttons (active state clearly highlighted).",
+        "Right side of the header contains: (1) a small 'Verified Secure' badge, and (2) a balance chip that displays the user balance (or a placeholder while loading).",
+        "The existing generated assets already used in the app (e.g., /assets/generated/onyx-wordmark.dim_1024x256.png and /assets/generated/onyx-background.dim_1920x1080.png) continue to render correctly and fit the new layout.",
+        "All routes continue to be reachable from the navigation (desktop and mobile)."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Redesign the Game page UI to match the uploaded reference image layout and hierarchy (marketing hero on the left, wheel + primary CTA on the right), while keeping existing game functionality unchanged.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "change the ui as this reference"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Game page shows a hero section styled like the reference (large headline, short descriptive text, and a jackpot-style badge/pill).",
+        "Game page includes two quick-action buttons styled like the reference: one navigates to Buy Credits (Deposit Funds) and one navigates to Transactions (View History).",
+        "Primary spin CTA is a wide gradient button styled like the reference and clearly indicates the spin cost (50 credits).",
+        "Spin behavior, balance checks, and outcome rendering remain functionally identical to the current implementation.",
+        "Layout is responsive: on small screens, hero/wheel/CTA stack vertically with consistent spacing and no overflow."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Apply the same reference-inspired visual system consistently across all user and admin pages (typography scale, card surfaces, button styles, page headers, and spacing) without changing features or flows.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "change the ui as this reference"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Wallet, Transactions, Profile, Buy Credits, Withdraw, and Admin pages share consistent page header styling and spacing.",
+        "Cards and panels use consistent premium surfaces (dark gradients, borders, and shadows) aligned with the reference.",
+        "Buttons (primary/secondary/outline) look consistent across pages and match the reference style direction.",
+        "No user-facing text is removed; only visual presentation changes."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Fix the reported slow page load behavior across the app by reducing unnecessary refetching, avoiding full-page loading states when cached data exists, and minimizing expensive work during route transitions.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "every page is taking too long to load fix it also"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Navigating between pages does not trigger repeated full-screen spinners when the user profile data is already cached.",
+        "React Query queries used across multiple pages (e.g., current user profile, isAdmin) are configured so they do not refetch on every route change by default (use an appropriate staleTime and refetch policy).",
+        "The actor initialization flow does not aggressively refetch ALL queries in a way that causes noticeable delays on page transitions (limit invalidation/refetch to what is necessary).",
+        "Route transitions feel immediate: the layout renders instantly and pages show either cached data or lightweight skeleton/inline loading states rather than blocking the whole page.",
+        "No backend interface changes are required to achieve the performance improvement."
       ]
     }
   ],
   "constraints": [
-    "Do not edit any files under frontend/src/components/ui (Shadcn/Radix UI sources are immutable).",
-    "Use English for any user-facing text."
+    "Do not edit files in frontend/src/components/ui (compose existing shadcn components instead).",
+    "Do not edit frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx (immutable paths per system constraints).",
+    "Keep backend single-actor architecture; only introduce backend changes if strictly required for performance (prefer frontend/query fixes)."
   ],
   "nonGoals": [
-    "Changing backend logic or adding new backend endpoints.",
-    "Redesigning modal layouts or adding new popup types beyond ensuring existing overlays have a blurred/dimmed backdrop."
+    "Adding new game modes (e.g., 'Slots') or new routes not already present.",
+    "Changing payout logic, spin cost (50 credits), or any backend business rules.",
+    "Introducing third-party analytics/performance monitoring services."
   ],
   "imageRequirements": {
     "required": [],

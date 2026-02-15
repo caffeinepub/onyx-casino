@@ -65,7 +65,7 @@ export default function ProfileSetupModal({ open }: ProfileSetupModalProps) {
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent 
-        className="sm:max-w-md max-h-[90vh] overflow-y-auto" 
+        className="sm:max-w-md premium-surface border-primary/30 shadow-2xl" 
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}

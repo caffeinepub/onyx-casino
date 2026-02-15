@@ -1,16 +1,18 @@
 import { useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { useSpinWheel, useGetCallerUserProfile } from '../hooks/useQueries';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import SpinWheel from '../components/game/SpinWheel';
-import BalanceTicker from '../components/wallet/BalanceTicker';
-import { Coins, TrendingUp, TrendingDown } from 'lucide-react';
+import { Sparkles, CreditCard, Receipt, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { GameOutcome } from '../backend';
 import PremiumSpinner from '../components/common/PremiumSpinner';
 
 export default function GamePage() {
-  const { data: profile, isLoading: profileLoading } = useGetCallerUserProfile();
+  const navigate = useNavigate();
+  const { data: profile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
   const spinWheel = useSpinWheel();
   const [isSpinning, setIsSpinning] = useState(false);
   const [lastOutcome, setLastOutcome] = useState<GameOutcome | undefined>(undefined);
@@ -51,54 +53,78 @@ export default function GamePage() {
     }
   };
 
-  if (profileLoading) {
+  // Show lightweight loading only on initial load
+  if (profileLoading && !isFetched) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <PremiumSpinner size="xl" className="mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading game...</p>
-        </div>
+        <PremiumSpinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
-      <div className="animate-fade-in">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">Spin & Win</h1>
-        <p className="text-sm md:text-base text-muted-foreground">Test your luck on the wheel</p>
-      </div>
+    <div className="max-w-7xl mx-auto">
+      <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        {/* Left: Hero Section */}
+        <div className="space-y-6 animate-fade-in order-2 lg:order-1">
+          <Badge className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0 text-sm font-bold">
+            <Sparkles className="h-4 w-4" />
+            JACKPOT: ₹10,000,000
+          </Badge>
 
-      <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
-        <Card className="border-primary/20 bg-gradient-to-br from-card to-card/50 animate-fade-in lg:col-span-2" style={{ animationDelay: '50ms' }}>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-              <Coins className="h-5 w-5 text-primary" />
-              Current Balance
-            </CardTitle>
-            <CardDescription className="text-xs md:text-sm">Your available credits</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <BalanceTicker balance={balance} />
-          </CardContent>
-        </Card>
+          <div className="space-y-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              The Peak of <br />
+              <span className="text-gradient">Gaming</span>
+            </h1>
+            <p className="text-base md:text-lg text-muted-foreground max-w-md">
+              Experience fair play and massive rewards on Nepal's premier gaming platform. Spin the wheel to test your destiny.
+            </p>
+          </div>
 
-        <Card className="border-primary/20 animate-fade-in" style={{ animationDelay: '100ms' }}>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg md:text-xl">Bet Amount</CardTitle>
-            <CardDescription className="text-xs md:text-sm">Per spin</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl md:text-4xl font-bold text-primary">50</p>
-            <p className="text-xs md:text-sm text-muted-foreground mt-1">Credits</p>
-          </CardContent>
-        </Card>
-      </div>
+          {/* Payout Info Cards */}
+          <div className="grid grid-cols-2 gap-4 max-w-md">
+            <Card className="premium-card border-primary/20">
+              <CardContent className="p-4 text-center">
+                <p className="text-2xl md:text-3xl font-bold text-primary">1.96x</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mt-1">Dragon Payout</p>
+              </CardContent>
+            </Card>
+            <Card className="premium-card border-primary/20">
+              <CardContent className="p-4 text-center">
+                <p className="text-2xl md:text-3xl font-bold text-primary">1.40x</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mt-1">Tiger Payout</p>
+              </CardContent>
+            </Card>
+          </div>
 
-      <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
-        <div className="lg:col-span-2 space-y-4 md:space-y-6">
-          <Card className="border-primary/20 premium-surface animate-fade-in" style={{ animationDelay: '150ms' }}>
-            <CardContent className="p-4 md:p-6">
+          {/* Quick Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <Button
+              onClick={() => navigate({ to: '/buy-credits' })}
+              variant="outline"
+              size="lg"
+              className="hover-lift gap-2 bg-background/50"
+            >
+              <CreditCard className="h-5 w-5" />
+              Deposit Funds
+            </Button>
+            <Button
+              onClick={() => navigate({ to: '/transactions' })}
+              variant="outline"
+              size="lg"
+              className="hover-lift gap-2 bg-background/50"
+            >
+              <Receipt className="h-5 w-5" />
+              View History
+            </Button>
+          </div>
+        </div>
+
+        {/* Right: Wheel + Spin Button */}
+        <div className="space-y-6 animate-fade-in order-1 lg:order-2" style={{ animationDelay: '100ms' }}>
+          <Card className="border-primary/20 premium-surface">
+            <CardContent className="p-6">
               <SpinWheel outcome={lastOutcome} isSpinning={isSpinning} />
             </CardContent>
           </Card>
@@ -107,8 +133,7 @@ export default function GamePage() {
             onClick={handleSpin}
             disabled={isSpinning || balance < 50}
             size="lg"
-            className="w-full h-14 md:h-16 text-base md:text-lg font-bold hover-lift touch-friendly shadow-premium-lg animate-fade-in"
-            style={{ animationDelay: '200ms' }}
+            className="w-full h-16 text-lg font-bold hover-lift touch-friendly shadow-premium-lg bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/90 hover:to-primary/70"
           >
             {isSpinning ? (
               <>
@@ -116,56 +141,12 @@ export default function GamePage() {
                 Spinning...
               </>
             ) : (
-              'SPIN THE WHEEL'
+              <>
+                <TrendingUp className="mr-2 h-5 w-5" />
+                SPIN • 50 CREDITS
+              </>
             )}
           </Button>
-        </div>
-
-        <div className="space-y-4 md:space-y-6">
-          <Card className="border-primary/20 animate-fade-in" style={{ animationDelay: '250ms' }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                <TrendingUp className="h-5 w-5 text-chart-4" />
-                Payouts
-              </CardTitle>
-              <CardDescription className="text-xs md:text-sm">Win multipliers</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between items-center p-2 md:p-3 rounded-lg bg-accent/50">
-                <span className="font-medium text-sm md:text-base">🐯 Tiger</span>
-                <span className="text-chart-4 font-bold text-sm md:text-base">1.4x</span>
-              </div>
-              <div className="flex justify-between items-center p-2 md:p-3 rounded-lg bg-accent/50">
-                <span className="font-medium text-sm md:text-base">🐉 Dragon</span>
-                <span className="text-chart-4 font-bold text-sm md:text-base">1.96x</span>
-              </div>
-              <div className="flex justify-between items-center p-2 md:p-3 rounded-lg bg-accent/50">
-                <span className="font-medium text-sm md:text-base">⚡ Crit</span>
-                <span className="text-chart-5 font-bold text-sm md:text-base">0.5x</span>
-              </div>
-              <div className="flex justify-between items-center p-2 md:p-3 rounded-lg bg-accent/50">
-                <span className="font-medium text-sm md:text-base">❌ Miss</span>
-                <span className="text-chart-5 font-bold text-sm md:text-base">0x</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-primary/20 animate-fade-in" style={{ animationDelay: '300ms' }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                <TrendingDown className="h-5 w-5 text-primary" />
-                How to Play
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
-                <li>• Each spin costs 50 credits</li>
-                <li>• Land on Tiger or Dragon to win</li>
-                <li>• Crit returns half your bet</li>
-                <li>• Miss loses your bet</li>
-              </ul>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

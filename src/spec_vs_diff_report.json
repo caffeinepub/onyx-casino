@@ -1,45 +1,58 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-14T17:11:27.558Z",
-  "summary": "The diff does not implement a global blurred + dimmed backdrop for overlays (modals/sheets). Changes shown are mainly theme/utility CSS additions in index.css and metadata/summary updates, with no evidence of styling targeting Radix/Shadcn overlay/backdrop elements.",
+  "generatedAt": "2026-02-15T01:30:54.550Z",
+  "summary": "Diff implements a premium dark visual system across layout and pages, adds a shared PageHeader, redesigns Game page to the requested hero/wheel/CTA layout with quick actions, and improves perceived performance via React Query caching/refetch policy updates and replacing some full-page loading states with inline skeletons/spinner-on-initial-load only. One REQ-1 asset (wordmark) is not evidenced in the provided AppLayout snippet. Diff summary also references payment/Stripe-related UI not requested in the BuildRequest.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Add a consistent blurred + dimmed backdrop effect whenever an overlay UI is open (e.g., modal dialogs like ProfileSetupModal and slide-over sheets), applied globally via CSS/theme overrides (without editing frontend/src/components/ui), and ensure only the background behind the overlay is blurred/dimmed (not the modal/sheet content).",
-      "reason": "No diff evidence of CSS rules that apply blur (e.g., backdrop-filter) and dimming to the overlay/backdrop elements used by dialogs/sheets (typically Radix/Shadcn overlay selectors). The modified index.css content shown contains theme variables and general utility classes but nothing that targets overlay backdrops.",
+      "requirement": "Ensure existing generated header/branding assets (e.g., /assets/generated/onyx-wordmark.dim_1024x256.png) continue to render correctly and fit the new global layout.",
+      "reason": "AppLayout snippet shows the background image (/assets/generated/onyx-background.dim_1920x1080.png) but the diff evidence does not show the onyx wordmark being rendered in the new header/layout, so compliance cannot be confirmed from provided diff summary.",
       "evidence": [
-        "frontend/src/index.css"
+        "frontend/src/components/layout/AppLayout.tsx (truncated)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Extensive theme color variable changes and addition of multiple animation/utility classes unrelated to overlay backdrop blur/dim behavior.",
-      "reason": "BuildRequest only asks for blurred/dimmed backdrop behind existing overlays; it does not request a theme overhaul or new animation utilities.",
+      "description": "Admin-only Stripe configuration UI (PaymentSetup) to set secret key/allowed countries.",
+      "reason": "BuildRequest explicitly focuses on UI restyling and performance; adding/configuring Stripe is not requested and may introduce new flows beyond visual updates.",
       "evidence": [
-        "frontend/src/index.css"
+        "frontend-file-summaries.txt (mentions \"frontend/src/components/admin/PaymentSetup.tsx\": \"Admin-only Stripe configuration component...\")"
       ]
     },
     {
-      "description": "Project tracking metadata updates marking the new feature requests as pending (no functional implementation).",
-      "reason": "This does not implement the requested UI behavior; it is ancillary/project bookkeeping not requested as part of the functional requirement.",
+      "description": "PaymentFailurePage (generic payment submission failure page).",
+      "reason": "BuildRequest non-goals include not adding new routes; a dedicated failure page/route is not requested (unclear if it pre-existed, but the diff summary calls it out as part of the change set).",
       "evidence": [
-        "project_state.json"
+        "frontend-file-summaries.txt (mentions \"frontend/src/pages/payments/PaymentFailurePage.tsx\")"
       ]
     },
     {
-      "description": "Updating/generated repository file summaries that describe many UI changes across the app (e.g., ProfileSetupModal welcome bonus messaging, wheel rendering enhancements, new pages/flows).",
-      "reason": "These described features are not part of the BuildRequest to add a blurred/dimmed backdrop; moreover, the diff summary only shows the summaries file being modified, not the underlying implementations.",
+      "description": "Changed navigation route for payment success to '/payment-success' instead of '/payments/success'.",
+      "reason": "Not part of the stated requirements (UI reference match + performance). This is a behavioral/routing change and could affect existing route structure (non-goal warns against adding new routes).",
       "evidence": [
-        "frontend-file-summaries.txt"
+        "frontend-file-summaries.txt (mentions BuyCreditsPage \"fixed navigation to use correct route '/payment-success' instead of '/payments/success'.\")"
       ]
     }
   ],
-  "confidence": 0.78,
+  "confidence": 0.66,
   "changed_files": [
     "frontend-file-summaries.txt",
+    "frontend/src/components/auth/AdminRouteGuard.tsx",
+    "frontend/src/components/common/PageHeader.tsx",
+    "frontend/src/components/layout/AppLayout.tsx",
+    "frontend/src/hooks/useQueries.ts",
     "frontend/src/index.css",
+    "frontend/src/pages/BuyCreditsPage.tsx",
+    "frontend/src/pages/GamePage.tsx",
+    "frontend/src/pages/ProfilePage.tsx",
+    "frontend/src/pages/TransactionsPage.tsx",
+    "frontend/src/pages/WalletPage.tsx",
+    "frontend/src/pages/WithdrawPage.tsx",
+    "frontend/src/pages/admin/AdminDashboardPage.tsx",
+    "frontend/src/pages/payments/PaymentSuccessPage.tsx",
+    "frontend/tailwind.config.js",
     "project_state.json"
   ]
 }
