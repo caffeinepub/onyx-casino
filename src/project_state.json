@@ -1,52 +1,46 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Implement a 4-section spinning wheel game (tiger/dragon/miss/crit) with a fixed pointer, smooth spin animation, per-spin credit cost, outcome effects, and balance updates.",
-  "architectural_notes": [
-    "Spin costs 50 credits up front; outcomes apply after stop: Dragon reward = 1.96 * 50, Tiger reward = 1.4 * 50, Miss = 0, Crit = deduct additional 25 credits (0.5 * 50).",
-    "Pointer is fixed at the top center; wheel rotates beneath it; the section under the pointer at stop determines the result.",
-    "After stop, show result UI with effects: rewarding effect for Tiger/Dragon, neutral for Miss, loss animation for Crit; result popup color reflects outcome (green/red)."
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [
+    "Wheel UI regression: segment text appears on border rather than centered inside segments",
+    "Pointer misaligned: currently top-left instead of top-center (12 o’clock)",
+    "Pointer styling issue: grey border present; should be yellow-only",
+    "Pointer animation incorrect: left-right; should be up-down"
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "isFixRequest": true,
+  "imageRequirements": "## Edit Images\n- Remove the grey border/background so only the yellow glowing triangle remains on transparency (glowing-yellow-pointer.dim_256x256.png > glowing-yellow-pointer-clean.dim_256x256.png)",
   "existing_features": [
     {
-      "id": "feature-replace-the-current-wheel-rendering-in-frontend-src-components-game-spinwheel-tsx-so-the-wheel-is-a-true-circular-element-not-a-rotated-image-divided-into-exactly-4-clearly-labeled-sections-tiger-dragon-miss-crit-use-an-svg-css-based-wheel-or-a-circle-png-if-already-present-and-ensure-the-wheel-is-visibly-rendered-at-all-times-idle-and-spinning",
-      "title": "Replace the current wheel rendering in `frontend/src/components/game/SpinWheel.tsx` so the wheel is a true circular element (not a rotated image) divided into exactly 4 clearly labeled sections: Tiger, Dragon, Miss, Crit. Use an SVG/CSS-based wheel (or a circle PNG if already present), and ensure the wheel is visibly rendered at all times (idle and spinning).",
+      "id": "feature-update-the-wheel-svg-label-positioning-so-that-all-segment-texts-tiger-dragon-miss-crit-and-their-multipliers-appear-clearly-centered-inside-their-respective-wheel-wedges-not-sitting-on-overlapping-the-segment-borders-dividing-lines-across-responsive-sizes",
+      "title": "Update the wheel SVG label positioning so that all segment texts (TIGER / DRAGON / MISS / CRIT and their multipliers) appear clearly centered inside their respective wheel wedges (not sitting on/overlapping the segment borders/dividing lines) across responsive sizes.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-ensure-a-fixed-pointer-at-the-top-center-of-the-wheel-area-that-indicates-the-selected-segment-when-the-wheel-stops-the-pointer-must-remain-fixed-while-the-wheel-rotates-beneath-it",
-      "title": "Implement/ensure a fixed pointer at the top-center of the wheel area that indicates the selected segment when the wheel stops. The pointer must remain fixed while the wheel rotates beneath it.",
+      "id": "feature-ensure-the-wheel-pointer-is-positioned-at-the-exact-top-middle-12-o-clock-horizontally-centered-over-the-wheel-and-remains-centered-even-while-its-animation-runs-i-e-do-not-allow-css-animations-to-override-the-centering-transform",
+      "title": "Ensure the wheel pointer is positioned at the exact top-middle (12 o’clock), horizontally centered over the wheel, and remains centered even while its animation runs (i.e., do not allow CSS animations to override the centering transform).",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-smooth-spin-interaction-flow-on-frontend-src-pages-gamepage-tsx-when-the-user-clicks-spin-deduct-50-credits-per-spin-via-the-backend-spin-call-animate-the-wheel-smoothly-stop-on-the-backend-provided-outcome-then-show-an-outcome-result-popup-notification-with-green-styling-for-wins-tiger-dragon-neutral-styling-for-miss-and-red-styling-for-crit",
-      "title": "Add a smooth spin interaction flow on `frontend/src/pages/GamePage.tsx`: when the user clicks Spin, deduct 50 credits per spin via the backend spin call, animate the wheel smoothly, stop on the backend-provided outcome, then show an outcome result popup/notification with green styling for wins (Tiger/Dragon), neutral styling for Miss, and red styling for Crit.",
+      "id": "feature-remove-the-grey-border-background-from-the-pointer-graphic-so-only-the-yellow-pointer-with-glow-remains-on-a-transparent-background-and-update-the-app-to-use-the-cleaned-asset-for-the-wheel-pointer",
+      "title": "Remove the grey border/background from the pointer graphic so only the yellow pointer (with glow) remains on a transparent background, and update the app to use the cleaned asset for the wheel pointer.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-ensure-the-balance-displayed-to-the-user-updates-to-reflect-the-backend-outcome-and-payout-rules-spin-cost-is-50-credits-each-time-dragon-pays-1-96-50-tiger-pays-1-4-50-miss-pays-0-no-payout-beyond-the-spin-cost-and-crit-deducts-an-additional-25-credits-i-e-extra-loss-on-top-of-the-50-spin-cost",
-      "title": "Ensure the balance displayed to the user updates to reflect the backend outcome and payout rules: Spin cost is 50 credits each time; Dragon pays 1.96×50, Tiger pays 1.4×50, Miss pays 0 (no payout beyond the spin cost), and Crit deducts an additional 25 credits (i.e., extra loss on top of the 50 spin cost).",
+      "id": "feature-change-the-pointer-animation-from-left-right-scale-pulsing-to-a-repeating-up-down-motion-up-down-up-down-while-preserving-the-pointer-s-12-o-clock-centered-position",
+      "title": "Change the pointer animation from left-right/scale pulsing to a repeating up-down motion (up, down, up, down), while preserving the pointer’s 12 o’clock centered position.",
       "reqIds": [
         "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-outcome-specific-visual-effects-are-shown-after-the-wheel-stops-rewarding-effect-for-tiger-dragon-neutral-effect-for-miss-and-loss-animation-for-crit-and-ensure-these-effects-do-not-appear-before-the-wheel-has-finished-spinning",
-      "title": "Ensure outcome-specific visual effects are shown after the wheel stops: rewarding effect for Tiger/Dragon, neutral effect for Miss, and loss animation for Crit, and ensure these effects do not appear before the wheel has finished spinning.",
-      "reqIds": [
-        "REQ-6"
       ],
       "version": 1
     }
@@ -54,32 +48,30 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Replace spinner image with a circle-based wheel (or circle PNG) divided into 4 sections: tiger, dragon, miss, crit",
+      "summary": "Center all segment label text inside each wheel wedge/segment (not on the border)",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Add fixed top-center pointer that indicates the wheel result when spinning stops",
+      "summary": "Reposition pointer to exact top-middle of the wheel (12 o’clock alignment)",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Implement spin interaction: deduct 50 credits per spin, smooth wheel spin animation, stop on a result, show outcome popup/effects, and update balance based on outcome (Dragon: +1.96x50, Tiger: +1.4x50, Miss: +0, Crit: -25 additional)",
+      "summary": "Remove grey pointer border; keep only the yellow pointer element",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-8",
-      "summary": "Update backend `spinWheel()` in `backend/main.mo` so outcomes are not hard-coded to a fixed value and instead vary per spin according to the configured probabilities, while continuing to return `outcome`, `profit`, and `balanceAfterSpin` consistent with the payout rules (including Crit additional -25 credits beyond the 50 credit spin cost).",
-      "reqIds": [
-        "REQ-5"
-      ],
+      "id": "AR-4",
+      "summary": "Change pointer animation from left-right to up-down (repeating up/down motion)",
+      "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Implement 4-section Tiger/Dragon/Miss/Crit spin wheel with non-image wheel rendering, pointer, correct payouts, and outcome feedback",
+  "projectName": "Fix wheel segment label positioning and pointer alignment/style/animation",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

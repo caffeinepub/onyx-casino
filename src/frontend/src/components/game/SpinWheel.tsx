@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import type { GameOutcome } from '../../backend';
+import { assetUrl } from '../../utils/assetUrl';
+import { GENERATED_ASSETS } from '../../utils/generatedAssets';
 
 interface SpinWheelProps {
   isSpinning: boolean;
@@ -12,7 +14,7 @@ export default function SpinWheel({ isSpinning, outcome, onSpinComplete }: SpinW
   const wheelRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<Animation | null>(null);
 
-  // Deterministic spin animation that lands on the backend-provided outcome
+  // Deterministic spin animation that lands exactly at the center of the outcome segment
   useEffect(() => {
     if (isSpinning && outcome && wheelRef.current) {
       // Map outcomes to their segment center angles (pointer at top = 0°)
@@ -24,16 +26,27 @@ export default function SpinWheel({ isSpinning, outcome, onSpinComplete }: SpinW
         crit: 270      // Left segment (270°)
       };
       
-      const targetSegmentCenter = outcomeAngles[outcome];
-      // Add small random offset within segment for natural feel
-      const randomOffset = (Math.random() - 0.5) * 30;
-      const targetAngle = targetSegmentCenter + randomOffset;
+      // Target angle is exactly the center of the segment (no random offset)
+      const targetAngle = outcomeAngles[outcome];
       
-      // Multiple full rotations for dramatic effect
-      const spins = 6 + Math.floor(Math.random() * 2);
-      const totalRotation = 360 * spins + (360 - targetAngle);
-      
+      // Normalize current rotation to 0-360 range
       const normalizedCurrent = rotation % 360;
+      
+      // Calculate the shortest path to the target
+      // We want to end at targetAngle, so we need to rotate to (360 - targetAngle)
+      // because the wheel rotates clockwise and the pointer is fixed at top
+      const targetRotation = 360 - targetAngle;
+      
+      // Add multiple full rotations for dramatic effect
+      const spins = 6 + Math.floor(Math.random() * 2);
+      
+      // Calculate total rotation needed
+      let deltaToTarget = targetRotation - normalizedCurrent;
+      if (deltaToTarget < 0) {
+        deltaToTarget += 360;
+      }
+      
+      const totalRotation = 360 * spins + deltaToTarget;
       const finalRotation = normalizedCurrent + totalRotation;
       
       if (animationRef.current) {
@@ -74,7 +87,8 @@ export default function SpinWheel({ isSpinning, outcome, onSpinComplete }: SpinW
       animationRef.current = animation;
 
       animation.onfinish = () => {
-        setRotation(finalRotation % 360);
+        // Set the exact final rotation to prevent drift
+        setRotation(finalRotation);
         // Signal that the wheel has stopped spinning
         onSpinComplete?.();
       };
@@ -84,19 +98,16 @@ export default function SpinWheel({ isSpinning, outcome, onSpinComplete }: SpinW
   return (
     <div className="relative w-full max-w-sm mx-auto">
       <div className="relative w-full aspect-square min-h-[280px] sm:min-h-[320px]">
-        {/* Fixed pointer at top - always visible */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 pointer-events-none wheel-pointer">
-          <div 
-            className="relative"
-            style={{
-              filter: 'drop-shadow(0 4px 12px rgba(212, 175, 55, 0.8)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6))'
-            }}
-          >
-            <div className="w-0 h-0 border-l-[24px] border-l-transparent border-r-[24px] border-r-transparent border-t-[48px] border-t-[#FFD700]" />
-            {/* Inner highlight for 3D effect */}
-            <div 
-              className="absolute top-0 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[18px] border-l-transparent border-r-[18px] border-r-transparent border-t-[36px] border-t-[#FFFACD]"
-              style={{ opacity: 0.4 }}
+        {/* Fixed glowing yellow pointer at top - always visible, centered wrapper with animated inner */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+          <div className="wheel-pointer">
+            <img 
+              src={assetUrl(GENERATED_ASSETS.glowingPointer)}
+              alt="Wheel pointer"
+              className="w-16 h-16 object-contain"
+              style={{
+                filter: 'drop-shadow(0 4px 12px rgba(255, 215, 0, 0.8)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6))'
+              }}
             />
           </div>
         </div>
@@ -192,11 +203,11 @@ export default function SpinWheel({ isSpinning, outcome, onSpinComplete }: SpinW
               <line x1="200" y1="30" x2="200" y2="370" stroke="oklch(0.65 0.18 45)" strokeWidth="3" opacity="0.7" />
               <line x1="30" y1="200" x2="370" y2="200" stroke="oklch(0.65 0.18 45)" strokeWidth="3" opacity="0.7" />
               
-              {/* Segment labels */}
-              {/* Tiger label (top) */}
+              {/* Segment labels - centered in each wedge */}
+              {/* Tiger label (top) - centered at 45° from top */}
               <text 
                 x="200" 
-                y="90" 
+                y="100" 
                 textAnchor="middle" 
                 fill="oklch(0.95 0.01 240)" 
                 fontSize="28"
@@ -207,7 +218,7 @@ export default function SpinWheel({ isSpinning, outcome, onSpinComplete }: SpinW
               </text>
               <text 
                 x="200" 
-                y="115" 
+                y="125" 
                 textAnchor="middle" 
                 fill="oklch(0.65 0.18 45)" 
                 fontSize="18"
@@ -216,9 +227,9 @@ export default function SpinWheel({ isSpinning, outcome, onSpinComplete }: SpinW
                 1.4x
               </text>
               
-              {/* Dragon label (right) */}
+              {/* Dragon label (right) - centered at 135° from top */}
               <text 
-                x="310" 
+                x="300" 
                 y="205" 
                 textAnchor="middle" 
                 fill="oklch(0.95 0.01 240)" 
@@ -229,7 +240,7 @@ export default function SpinWheel({ isSpinning, outcome, onSpinComplete }: SpinW
                 DRAGON
               </text>
               <text 
-                x="310" 
+                x="300" 
                 y="230" 
                 textAnchor="middle" 
                 fill="oklch(0.70 0.18 45)" 
@@ -239,10 +250,10 @@ export default function SpinWheel({ isSpinning, outcome, onSpinComplete }: SpinW
                 1.96x
               </text>
               
-              {/* Miss label (bottom) */}
+              {/* Miss label (bottom) - centered at 225° from top */}
               <text 
                 x="200" 
-                y="305" 
+                y="295" 
                 textAnchor="middle" 
                 fill="oklch(0.95 0.01 240)" 
                 fontSize="28"
@@ -253,7 +264,7 @@ export default function SpinWheel({ isSpinning, outcome, onSpinComplete }: SpinW
               </text>
               <text 
                 x="200" 
-                y="330" 
+                y="320" 
                 textAnchor="middle" 
                 fill="oklch(0.60 0.01 240)" 
                 fontSize="18"
@@ -262,9 +273,9 @@ export default function SpinWheel({ isSpinning, outcome, onSpinComplete }: SpinW
                 0x
               </text>
               
-              {/* Crit label (left) */}
+              {/* Crit label (left) - centered at 315° from top */}
               <text 
-                x="90" 
+                x="100" 
                 y="205" 
                 textAnchor="middle" 
                 fill="oklch(0.95 0.01 240)" 
@@ -275,7 +286,7 @@ export default function SpinWheel({ isSpinning, outcome, onSpinComplete }: SpinW
                 CRIT
               </text>
               <text 
-                x="90" 
+                x="100" 
                 y="230" 
                 textAnchor="middle" 
                 fill="oklch(0.55 0.22 25)" 

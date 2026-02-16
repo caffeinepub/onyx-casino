@@ -264,28 +264,42 @@
     min-width: 280px;
   }
 
-  /* Wheel pointer - always visible */
+  /* Wheel pointer - always visible, fixed at top center with up-down bobbing animation */
   .wheel-pointer {
-    animation: pointerPulse 2s ease-in-out infinite;
+    animation: pointerBob 2s ease-in-out infinite;
     z-index: 20;
     position: relative;
   }
 
-  @keyframes pointerPulse {
+  @keyframes pointerBob {
     0%, 100% {
-      transform: translateX(-50%) scale(1);
+      transform: translateY(0);
     }
     50% {
-      transform: translateX(-50%) scale(1.05);
+      transform: translateY(-8px);
     }
   }
 }
 
-/* Full-viewport overlay backdrop */
-.backdrop-overlay {
+/* Full-viewport background layer */
+.animated-background {
   position: fixed;
   inset: 0;
-  background: oklch(0.10 0.02 240 / 0.8);
-  backdrop-filter: blur(8px);
-  z-index: 50;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    oklch(0.15 0.02 240 / 0.3) 0%,
+    oklch(0.12 0.02 240 / 0) 70%
+  );
+  animation: backgroundPulse 8s ease-in-out infinite;
+}
+
+@keyframes backgroundPulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }

@@ -11,11 +11,11 @@ import OutCall "http-outcalls/outcall";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Iter "mo:core/Iter";
-import Migration "migration";
+
 import Blob "mo:core/Blob";
 
 // Apply migration logic
-(with migration = Migration.run)
+
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);

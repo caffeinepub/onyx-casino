@@ -1,113 +1,80 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "4-section SVG spin wheel with fixed pointer, smooth stop-on-outcome animation, outcome feedback, and balance sync",
+  "title": "Fix wheel label layout and pointer alignment/asset/animation",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Replace SpinWheel rendering with a true circular SVG/CSS wheel split into 4 labeled segments (Tiger/Dragon/Miss/Crit) that remains visible idle and during spins.",
+      "summary": "Reposition wheel SVG segment labels so each label and multiplier is centered within its wedge with padding from dividers/rims across responsive sizes.",
       "acceptanceCriteria": [
-        "On the Game page, the wheel appears as a circle (not a diamond/rotated square image).",
-        "The wheel has exactly 4 segments and each segment is visibly labeled: Tiger, Dragon, Miss, Crit.",
-        "The wheel is visible both before and during a spin (no blank/transparent state)."
+        "On the Game wheel, each segment label and its multiplier is visually inside the segment area with comfortable padding from the rim and divider lines at common viewport sizes (mobile and desktop).",
+        "No label text overlaps the cross dividers or outer/inner rims."
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/game/SpinWheel.tsx",
           "operation": "modify",
-          "description": "Remove image-based wheel rendering/diagnostics and implement a circular SVG wheel with exactly 4 equal segments and visible text labels (Tiger/Dragon/Miss/Crit). Keep wheel content always rendered (idle/spinning) and rotate the wheel element (not the entire container)."
-        },
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Add/adjust CSS utility classes for the new SVG wheel (e.g., label typography/contrast, segment divider styling) to ensure labels remain legible in both idle and spinning states."
+          "description": "Update the SVG text layout to use wedge-centered positioning (e.g., via polar-coordinate placement around the center) for TIGER/DRAGON/MISS/CRIT and their multipliers, ensuring consistent padding from divider lines and rims at all rendered sizes."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Ensure a fixed top-center pointer overlays the wheel and indicates the selected segment when the wheel stops.",
+      "summary": "Keep the wheel pointer exactly top-center (12 o’clock) and ensure its animation does not override the centering transform.",
       "acceptanceCriteria": [
-        "A pointer is always visible above the wheel at top-center.",
-        "During spin animation, the pointer does not move; only the wheel rotates.",
-        "When the wheel stops, the pointer aligns to the final outcome segment."
+        "Pointer’s tip visually aligns with the 12 o’clock position at the top of the wheel.",
+        "During the pointer animation, the pointer does not drift left/right and stays horizontally centered."
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/game/SpinWheel.tsx",
           "operation": "modify",
-          "description": "Keep/render the pointer as a non-rotating overlay anchored top-center of the wheel container, and align the wheel’s outcome-to-rotation mapping so the pointer indicates the center of the final outcome segment at rest."
+          "description": "Refactor pointer DOM structure so centering (left-1/2 with -translate-x-1/2) is applied on a non-animated wrapper and the animation is applied on an inner element, preventing animation transforms from overriding the centering."
         },
         {
           "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Refine pointer positioning/z-index and optional subtle animation (pulse) so it stays visibly fixed above the rotating wheel without layout shifting."
+          "description": "Adjust wheel pointer CSS classes so the centering transform is not included in keyframes (move centering to a wrapper and keep keyframes transform-only for vertical motion/opacity as needed)."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Implement smooth spin flow on GamePage: block spins under 50 credits, animate smoothly, stop on backend outcome, disable double-spins, and show outcome-styled result notification after stop.",
+      "summary": "Replace the wheel pointer image with a cleaned transparent asset (no grey border/background) and wire it into the app.",
       "acceptanceCriteria": [
-        "Clicking Spin triggers a visible smooth wheel rotation and then a stop (no instant jump).",
-        "Spin button is disabled while spinning to prevent double-spins.",
-        "After the wheel stops, the UI shows a clear result popup/notification with: win=green (Tiger/Dragon), miss=neutral, crit=red.",
-        "If the user has < 50 credits, spinning is blocked and an English error message is shown."
+        "The pointer image renders without any grey square/border behind it (transparent background).",
+        "The pointer still appears as a glowing yellow triangle against the dark UI."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/GamePage.tsx",
-          "operation": "modify",
-          "description": "Adjust the spin interaction so the backend spin call triggers the wheel rotation, the Spin button remains disabled while spinning/effects run, and the result toast/notification is shown only after the wheel stop callback fires. Style notifications by outcome (Tiger/Dragon green, Miss neutral, Crit red) and keep the <50 credits guard with English messaging."
+          "path": "frontend/public/assets/generated/glowing-yellow-pointer-clean.dim_256x256.png",
+          "operation": "create",
+          "description": "Add the cleaned pointer asset with transparent background (derived from glowing-yellow-pointer.dim_256x256.png per imageRequirements edits)."
         },
         {
-          "path": "frontend/src/components/game/SpinWheel.tsx",
+          "path": "frontend/src/utils/generatedAssets.ts",
           "operation": "modify",
-          "description": "Ensure the wheel animation is smooth and deterministic (lands on backend-provided outcome) and reliably calls onSpinComplete only when the wheel has finished rotating."
+          "description": "Update GENERATED_ASSETS.glowingPointer to reference frontend/public/assets/generated/glowing-yellow-pointer-clean.dim_256x256.png so the app uses the cleaned pointer asset."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Ensure the displayed balance updates to match backend-provided balanceAfterSpin and reflects the specified payout rules via backend results.",
+      "summary": "Change the pointer animation to a repeating up-down bobbing motion while preserving exact 12 o’clock centering.",
       "acceptanceCriteria": [
-        "After each completed spin, the user’s displayed balance matches `balanceAfterSpin` returned by the backend.",
-        "Dragon outcome results in net +48 credits vs pre-spin balance (win 98 minus 50 cost).",
-        "Tiger outcome results in net +20 credits vs pre-spin balance (win 70 minus 50 cost).",
-        "Miss outcome results in net -50 credits vs pre-spin balance (50 cost, no payout).",
-        "Crit outcome results in net -75 credits vs pre-spin balance (50 cost + additional 25 loss)."
+        "Pointer animates vertically (subtle bobbing) in a continuous loop.",
+        "Animation does not introduce any horizontal movement or misalignment."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Update the spin mutation success handling to immediately sync the React Query cache for ['currentUserProfile'] with the returned SpinResult (at minimum: credits/balanceAfterSpin and lastSpinResult), so the displayed balance updates promptly and matches backend values."
+          "description": "Replace the existing pointerPulse keyframes with a vertical-only bobbing animation (translateY up/down) and ensure the animated element does not include any translateX in keyframes."
         },
         {
-          "path": "frontend/src/pages/GamePage.tsx",
+          "path": "frontend/src/components/game/SpinWheel.tsx",
           "operation": "modify",
-          "description": "Use backend-provided SpinResult values for user-facing result messaging (profit/balanceAfterSpin) and avoid any frontend-side payout calculations that could drift from backend rules."
-        }
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "summary": "Show outcome-specific visual effects only after the wheel stops: win effect for Tiger/Dragon, neutral for Miss, loss for Crit; allow spinning again after effects complete.",
-      "acceptanceCriteria": [
-        "Effects are triggered only after `onSpinComplete` fires (wheel stopped).",
-        "Tiger/Dragon display a win/reward effect; Miss displays a neutral effect; Crit displays a loss effect.",
-        "After the effect completes, the user can spin again."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/GamePage.tsx",
-          "operation": "modify",
-          "description": "Ensure OutcomeEffects are triggered only from the wheel’s stop callback (not immediately after the backend call) and that the app re-enables spinning only after onEffectComplete fires."
-        },
-        {
-          "path": "frontend/src/components/game/OutcomeEffects.tsx",
-          "operation": "modify",
-          "description": "Confirm effects/durations map to Tiger/Dragon (reward), Miss (neutral), Crit (loss) and remain purely post-stop overlays; adjust timing or layering if needed to prevent appearing before the wheel finishes."
+          "description": "Wire the updated CSS animation class to the pointer inner element (leaving the wrapper responsible for absolute top placement and horizontal centering) to preserve alignment during the up-down animation."
         }
       ]
     }

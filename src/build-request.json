@@ -1,137 +1,92 @@
 {
   "kind": "build_request",
-  "title": "Implement 4-section Tiger/Dragon/Miss/Crit spin wheel with non-image wheel rendering, pointer, correct payouts, and outcome feedback",
+  "title": "Fix wheel segment label positioning and pointer alignment/style/animation",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Replace the current wheel rendering in `frontend/src/components/game/SpinWheel.tsx` so the wheel is a true circular element (not a rotated image) divided into exactly 4 clearly labeled sections: Tiger, Dragon, Miss, Crit. Use an SVG/CSS-based wheel (or a circle PNG if already present), and ensure the wheel is visibly rendered at all times (idle and spinning).",
+      "text": "Update the wheel SVG label positioning so that all segment texts (TIGER / DRAGON / MISS / CRIT and their multipliers) appear clearly centered inside their respective wheel wedges (not sitting on/overlapping the segment borders/dividing lines) across responsive sizes.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-6"
         ],
         "quotes": [
-          "yeah finally it appears butt ahhh see how its lookinh like 1 of all dont put image instead use circle element to implement a spinner or use circle png and second it should have 4 sections tiger dragon miss crit"
+          "first of all the text is not inside segment its on border fix it"
         ]
       },
       "acceptanceCriteria": [
-        "On the Game page, the wheel appears as a circle (not a diamond/rotated square image).",
-        "The wheel has exactly 4 segments and each segment is visibly labeled: Tiger, Dragon, Miss, Crit.",
-        "The wheel is visible both before and during a spin (no blank/transparent state)."
+        "On the Game wheel, each segment label and its multiplier is visually inside the segment area with comfortable padding from the rim and divider lines at common viewport sizes (mobile and desktop).",
+        "No label text overlaps the cross dividers or outer/inner rims."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Implement/ensure a fixed pointer at the top-center of the wheel area that indicates the selected segment when the wheel stops. The pointer must remain fixed while the wheel rotates beneath it.",
+      "text": "Ensure the wheel pointer is positioned at the exact top-middle (12 o’clock), horizontally centered over the wheel, and remains centered even while its animation runs (i.e., do not allow CSS animations to override the centering transform).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-6"
         ],
         "quotes": [
-          "also implement a pointer of result on top",
-          "yes it should be fix it point the result when the spinner stops spinning"
+          "second the pointer should be in top middle not topleft",
+          "2 yes"
         ]
       },
       "acceptanceCriteria": [
-        "A pointer is always visible above the wheel at top-center.",
-        "During spin animation, the pointer does not move; only the wheel rotates.",
-        "When the wheel stops, the pointer aligns to the final outcome segment."
+        "Pointer’s tip visually aligns with the 12 o’clock position at the top of the wheel.",
+        "During the pointer animation, the pointer does not drift left/right and stays horizontally centered."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add a smooth spin interaction flow on `frontend/src/pages/GamePage.tsx`: when the user clicks Spin, deduct 50 credits per spin via the backend spin call, animate the wheel smoothly, stop on the backend-provided outcome, then show an outcome result popup/notification with green styling for wins (Tiger/Dragon), neutral styling for Miss, and red styling for Crit.",
+      "text": "Remove the grey border/background from the pointer graphic so only the yellow pointer (with glow) remains on a transparent background, and update the app to use the cleaned asset for the wheel pointer.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-6"
         ],
         "quotes": [
-          "add a smooth spinning animation of the wheel when user click spin the 50 credit deduct on each spin and then the spinner stop result pops up in green red accordingly to the result"
+          "its grey border should be removed only yellow part is needed"
         ]
       },
       "acceptanceCriteria": [
-        "Clicking Spin triggers a visible smooth wheel rotation and then a stop (no instant jump).",
-        "Spin button is disabled while spinning to prevent double-spins.",
-        "After the wheel stops, the UI shows a clear result popup/notification with: win=green (Tiger/Dragon), miss=neutral, crit=red.",
-        "If the user has < 50 credits, spinning is blocked and an English error message is shown."
+        "The pointer image renders without any grey square/border behind it (transparent background).",
+        "The pointer still appears as a glowing yellow triangle against the dark UI."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Ensure the balance displayed to the user updates to reflect the backend outcome and payout rules: Spin cost is 50 credits each time; Dragon pays 1.96×50, Tiger pays 1.4×50, Miss pays 0 (no payout beyond the spin cost), and Crit deducts an additional 25 credits (i.e., extra loss on top of the 50 spin cost).",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "recent-messages"
-        ],
-        "quotes": [
-          "one spin should only cost 50 credits",
-          "1.96x of 50 if dragon comes and 1.4x of 50 if tiger comes and on miss 0 and on crit user loose .05x means additional 25 from balance",
-          "oh my bad it should be 0.5 means 25 creds"
-        ]
-      },
-      "acceptanceCriteria": [
-        "After each completed spin, the user’s displayed balance matches `balanceAfterSpin` returned by the backend.",
-        "Dragon outcome results in net +48 credits vs pre-spin balance (win 98 minus 50 cost).",
-        "Tiger outcome results in net +20 credits vs pre-spin balance (win 70 minus 50 cost).",
-        "Miss outcome results in net -50 credits vs pre-spin balance (50 cost, no payout).",
-        "Crit outcome results in net -75 credits vs pre-spin balance (50 cost + additional 25 loss)."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Update backend `spinWheel()` in `backend/main.mo` so outcomes are not hard-coded to a fixed value and instead vary per spin according to the configured probabilities, while continuing to return `outcome`, `profit`, and `balanceAfterSpin` consistent with the payout rules (including Crit additional -25 credits beyond the 50 credit spin cost).",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "recent-messages"
-        ],
-        "quotes": [
-          "add a smooth spinning animation of the wheel when user click spin the 50 credit deduct on each spin ... and the result should reflect in balance acc to the outcome",
-          "oh my bad it should be 0.5 means 25 creds"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Two consecutive calls to `spinWheel()` can produce different outcomes (i.e., result is not constant).",
-        "Returned `profit` values align with the specified rules: Dragon=+48, Tiger=+20, Miss=-50, Crit=-75 (based on base bet 50).",
-        "`balanceAfterSpin` is computed from the caller’s prior credits and the computed `profit`, and the user’s stored credits are updated accordingly."
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Ensure outcome-specific visual effects are shown after the wheel stops: rewarding effect for Tiger/Dragon, neutral effect for Miss, and loss animation for Crit, and ensure these effects do not appear before the wheel has finished spinning.",
+      "text": "Change the pointer animation from left-right/scale pulsing to a repeating up-down motion (up, down, up, down), while preserving the pointer’s 12 o’clock centered position.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-6"
         ],
         "quotes": [
-          "also show result of spin with rewarding effect if tiger or dragon neutral on miss and loss animation on crit"
+          "instead of animating it left to right add animation up down up down"
         ]
       },
       "acceptanceCriteria": [
-        "Effects are triggered only after `onSpinComplete` fires (wheel stopped).",
-        "Tiger/Dragon display a win/reward effect; Miss displays a neutral effect; Crit displays a loss effect.",
-        "After the effect completes, the user can spin again."
+        "Pointer animates vertically (subtle bobbing) in a continuous loop.",
+        "Animation does not introduce any horizontal movement or misalignment."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in `backend/main.mo` (no additional backend services).",
-    "Do not modify files under `frontend/src/components/ui` or other immutable paths listed in SYSTEM_CONTEXT.",
-    "Use English for any user-facing text."
+    "Do not edit files under frontend/src/components/ui (compose them instead).",
+    "Do not modify immutable hook files: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx.",
+    "Keep backend as single-actor; no backend changes are required for these UI-only fixes."
   ],
   "nonGoals": [
-    "Adding third-party authentication providers beyond Internet Identity.",
-    "Adding real-time multiplayer or chat features.",
-    "Implementing withdrawals functionality (currently a placeholder feature)."
+    "Changing game outcome logic or spin determinism.",
+    "Adding new wheel segments or altering payout values."
   ],
   "imageRequirements": {
     "required": [],
-    "edits": []
+    "edits": [
+      "Remove the grey border/background so only the yellow glowing triangle remains on transparency (glowing-yellow-pointer.dim_256x256.png > glowing-yellow-pointer-clean.dim_256x256.png)"
+    ]
   },
   "userProfileUpdate": {
     "goalsToAdd": [],

@@ -2,8 +2,8 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-replace-the-current-wheel-rendering-in-frontend-src-components-game-spinwheel-tsx-so-the-wheel-is-a-true-circular-element-not-a-rotated-image-divided-into-exactly-4-clearly-labeled-sections-tiger-dragon-miss-crit-use-an-svg-css-based-wheel-or-a-circle-png-if-already-present-and-ensure-the-wheel-is-visibly-rendered-at-all-times-idle-and-spinning",
-      "featureTitle": "Replace the current wheel rendering in `frontend/src/components/game/SpinWheel.tsx` so the wheel is a true circular element (not a rotated image) divided into exactly 4 clearly labeled sections: Tiger, Dragon, Miss, Crit. Use an SVG/CSS-based wheel (or a circle PNG if already present), and ensure the wheel is visibly rendered at all times (idle and spinning).",
+      "featureId": "feature-update-the-wheel-svg-label-positioning-so-that-all-segment-texts-tiger-dragon-miss-crit-and-their-multipliers-appear-clearly-centered-inside-their-respective-wheel-wedges-not-sitting-on-overlapping-the-segment-borders-dividing-lines-across-responsive-sizes",
+      "featureTitle": "Update the wheel SVG label positioning so that all segment texts (TIGER / DRAGON / MISS / CRIT and their multipliers) appear clearly centered inside their respective wheel wedges (not sitting on/overlapping the segment borders/dividing lines) across responsive sizes.",
       "files": [
         "frontend/src/components/game/SpinWheel.tsx"
       ],
@@ -23,10 +23,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-ensure-a-fixed-pointer-at-the-top-center-of-the-wheel-area-that-indicates-the-selected-segment-when-the-wheel-stops-the-pointer-must-remain-fixed-while-the-wheel-rotates-beneath-it",
-      "featureTitle": "Implement/ensure a fixed pointer at the top-center of the wheel area that indicates the selected segment when the wheel stops. The pointer must remain fixed while the wheel rotates beneath it.",
+      "featureId": "feature-ensure-the-wheel-pointer-is-positioned-at-the-exact-top-middle-12-o-clock-horizontally-centered-over-the-wheel-and-remains-centered-even-while-its-animation-runs-i-e-do-not-allow-css-animations-to-override-the-centering-transform",
+      "featureTitle": "Ensure the wheel pointer is positioned at the exact top-middle (12 o’clock), horizontally centered over the wheel, and remains centered even while its animation runs (i.e., do not allow CSS animations to override the centering transform).",
       "files": [
-        "frontend/src/components/game/SpinWheel.tsx"
+        "frontend/src/components/game/SpinWheel.tsx",
+        "frontend/src/index.css"
       ],
       "components": [
         "authorization@4.0.0",
@@ -44,11 +45,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-smooth-spin-interaction-flow-on-frontend-src-pages-gamepage-tsx-when-the-user-clicks-spin-deduct-50-credits-per-spin-via-the-backend-spin-call-animate-the-wheel-smoothly-stop-on-the-backend-provided-outcome-then-show-an-outcome-result-popup-notification-with-green-styling-for-wins-tiger-dragon-neutral-styling-for-miss-and-red-styling-for-crit",
-      "featureTitle": "Add a smooth spin interaction flow on `frontend/src/pages/GamePage.tsx`: when the user clicks Spin, deduct 50 credits per spin via the backend spin call, animate the wheel smoothly, stop on the backend-provided outcome, then show an outcome result popup/notification with green styling for wins (Tiger/Dragon), neutral styling for Miss, and red styling for Crit.",
+      "featureId": "feature-remove-the-grey-border-background-from-the-pointer-graphic-so-only-the-yellow-pointer-with-glow-remains-on-a-transparent-background-and-update-the-app-to-use-the-cleaned-asset-for-the-wheel-pointer",
+      "featureTitle": "Remove the grey border/background from the pointer graphic so only the yellow pointer (with glow) remains on a transparent background, and update the app to use the cleaned asset for the wheel pointer.",
       "files": [
-        "frontend/src/components/game/SpinWheel.tsx",
-        "frontend/src/pages/GamePage.tsx"
+        "frontend/src/utils/generatedAssets.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -66,11 +66,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-the-balance-displayed-to-the-user-updates-to-reflect-the-backend-outcome-and-payout-rules-spin-cost-is-50-credits-each-time-dragon-pays-1-96-50-tiger-pays-1-4-50-miss-pays-0-no-payout-beyond-the-spin-cost-and-crit-deducts-an-additional-25-credits-i-e-extra-loss-on-top-of-the-50-spin-cost",
-      "featureTitle": "Ensure the balance displayed to the user updates to reflect the backend outcome and payout rules: Spin cost is 50 credits each time; Dragon pays 1.96×50, Tiger pays 1.4×50, Miss pays 0 (no payout beyond the spin cost), and Crit deducts an additional 25 credits (i.e., extra loss on top of the 50 spin cost).",
+      "featureId": "feature-change-the-pointer-animation-from-left-right-scale-pulsing-to-a-repeating-up-down-motion-up-down-up-down-while-preserving-the-pointer-s-12-o-clock-centered-position",
+      "featureTitle": "Change the pointer animation from left-right/scale pulsing to a repeating up-down motion (up, down, up, down), while preserving the pointer’s 12 o’clock centered position.",
       "files": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/GamePage.tsx"
+        "frontend/src/components/game/SpinWheel.tsx",
+        "frontend/src/index.css"
       ],
       "components": [
         "authorization@4.0.0",
@@ -84,27 +84,6 @@
       ],
       "testIds": [
         "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-outcome-specific-visual-effects-are-shown-after-the-wheel-stops-rewarding-effect-for-tiger-dragon-neutral-effect-for-miss-and-loss-animation-for-crit-and-ensure-these-effects-do-not-appear-before-the-wheel-has-finished-spinning",
-      "featureTitle": "Ensure outcome-specific visual effects are shown after the wheel stops: rewarding effect for Tiger/Dragon, neutral effect for Miss, and loss animation for Crit, and ensure these effects do not appear before the wheel has finished spinning.",
-      "files": [
-        "frontend/src/pages/GamePage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-6"
       ],
       "confidence": "high"
     }
